@@ -128,13 +128,13 @@ async function fetchViaHermes(assets: string[]): Promise<Partial<Record<string, 
 export async function fetchPythLatestPrices(assets: string[]): Promise<Partial<Record<string, number>>> {
   const uniqueAssets = Array.from(new Set(assets.filter(Boolean)));
   const [binancePrices, bybitPrices, hyperliquidPrices, robinhoodQuotes, yahooPrices, chainlinkPrices, hermesPrices] = await Promise.all([
-    fetchBinanceQuotes(uniqueAssets).catch(() => ({})),
-    fetchBybitQuotes(uniqueAssets).catch(() => ({})),
-    fetchHyperliquidMids(uniqueAssets).catch(() => ({})),
-    fetchRobinhoodQuoteMids(uniqueAssets).catch(() => ({})),
-    fetchPublicQuotes(uniqueAssets).catch(() => ({})),
-    fetchRobinhoodStockPrices(uniqueAssets).catch(() => ({})),
-    fetchViaHermes(uniqueAssets).catch(() => ({})),
+    fetchBinanceQuotes(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchBybitQuotes(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchHyperliquidMids(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchRobinhoodQuoteMids(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchPublicQuotes(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchRobinhoodStockPrices(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
+    fetchViaHermes(uniqueAssets).catch(() => ({}) as Partial<Record<string, number>>),
   ]);
 
   const out: Partial<Record<string, number>> = {};

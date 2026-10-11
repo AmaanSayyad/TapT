@@ -67,8 +67,9 @@ export async function transferFromEvmTreasury(
     const gas = network === 'ARB'
       ? ((await provider.estimateGas({ ...txRequest, from: wallet.address })) * 12n) / 10n
       : undefined;
-    const tx = await wallet.sendTransaction({ ...txRequest, gas });
+    const tx = await wallet.sendTransaction(gas === undefined ? txRequest : { ...txRequest, gasLimit: gas });
     const receipt = await tx.wait();
+    if (!receipt) throw new Error('Treasury transfer was not confirmed');
     return receipt.hash;
   } finally {
     provider.destroy();

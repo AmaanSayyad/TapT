@@ -551,12 +551,12 @@ export const DepositModal: React.FC<DepositModalProps> = ({
           let gas: bigint | undefined;
           if (network === 'ARB') {
             try {
-              const estimated = await walletClient.estimateGas({
+              const estimated = await publicClient?.estimateGas({
                 account: walletClient.account,
                 to,
                 value,
               });
-              gas = (estimated * 12n) / 10n;
+              if (estimated) gas = (estimated * 12n) / 10n;
             } catch {
               gas = undefined;
             }
@@ -580,7 +580,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
           confirmations: network === 'ARB' || network === 'TEMPO' || network === 'BASE' ? 1 : undefined,
         });
         txHash = hash;
-      } else if (network !== 'SOL' && network !== 'SUI' && network !== 'NEAR' && network !== 'PUSH' && network !== 'STRK' && network !== 'XTZ' && network !== 'XLM' && network !== 'SOMNIA' && network !== 'ZG' && network !== 'OCT' && network !== 'INIT' && network !== 'APT' && network !== 'BNB') {
+      } else if (network == null) {
         throw new Error('This chain is turned off. Connect Robinhood Chain, Base, Arbitrum, Tempo, or Solana.');
       } else {
         // BNB (EVM) — support both wagmi wallets (MetaMask) and Privy embedded wallets.

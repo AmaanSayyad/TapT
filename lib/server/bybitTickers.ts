@@ -63,7 +63,7 @@ async function loadLastPrices(): Promise<Record<string, number>> {
       const bySymbol = new Map<string, number>();
       for (const row of data.result?.list || []) {
         const price = microPrice(row);
-        if (row.symbol && price > 0) bySymbol.set(row.symbol, price);
+        if (row.symbol && price != null && price > 0) bySymbol.set(row.symbol, price);
       }
       const prices: Record<string, number> = {};
       for (const [asset, symbol] of Object.entries(BYBIT_SYMBOL)) {
