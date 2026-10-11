@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 36" fill="#fff" role="img" aria-label="Trail of Bits">
+  <path d="M2 8h8.2l1.4 4.1L13.1 8H21v2.1h-5.6l-2.4 6.6L15.5 24H13l-2.5-6.8L8 24H5.5l2.5-7.3L5.6 10.1H2V8Zm22.5 0h14.8v2.1h-6.2V24h-2.4V10.1h-6.2V8Zm18.2 0h2.5l5.2 12.4L55.6 8H58v16h-2.2v-11l-4.4 11h-1.7l-4.4-11V24h-2.2V8Zm21.8 0h12.4v2.1H67.2v4.7h7.4v2.1h-7.4V22h7.8V24H64.5V8Z"/>
+  <g transform="translate(86 4) rotate(-20)">
+    <path d="M0 8h7.2V5.8H2.3V2.2H6.8V0H0v8Z"/>
+  </g>
+  <path d="M88 14h2.4l1.6 4.4 1.6-4.4h2.5L92.8 24h-2.2l-1.1-3.2-1.1 3.2H86.2L88 14Zm10.8 0h8.6v2h-3.1v8h-2.3v-8h-3.2v-2Zm11.2 0H118v2h-3.6v8h-2.3v-8H108v-2Z"/>
+</svg>
