@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Arbitrum">
+  <path
+    d="M24 3.2 42.6 35.5H5.4L24 3.2Z"
+    fill="url(#arbGrad)"
+  />
+  <path
+    d="M24 14.2 33.2 30.4H14.8L24 14.2Z"
+    fill="#0B0B0B"
+  />
+  <defs>
+    <linearGradient id="arbGrad" x1="8" y1="34" x2="36" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12AAFF"/>
+      <stop offset="0.5" stop-color="#4D3DF7"/>
+      <stop offset="1" stop-color="#9B59FF"/>
+    </linearGradient>
+  </defs>
+</svg>
