@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" role="img" aria-label="Hackquest">
+  <path
+    fill="#FFFFFF"
+    d="M3.8 11.05h7.6a5.6 5.6 0 1 1 0 1.9H3.8a.95.95 0 1 1 0-1.9Zm11.2 1.05a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Z"
+  />
+  <circle cx="15" cy="12.1" r="1.4" fill="#111111"/>
+</svg>
