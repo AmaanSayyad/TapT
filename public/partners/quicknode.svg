@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" role="img" aria-label="Quicknode">
+  <path
+    fill="#fff"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2Zm0 2.55a7.45 7.45 0 1 0 .001 14.901A7.45 7.45 0 0 0 12 4.55ZM1.75 9.15h5.6v2.35h-5.6V9.15Zm15 3.45h5.5v2.35h-5.5V12.6Z"
+  />
+</svg>
