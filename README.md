@@ -10,7 +10,7 @@ Binary options trading platform for crypto, stocks, metals, and FX. A round last
 | **Pitch deck** | https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing |
 | **GitHub** | https://github.com/AmaanSayyad/TapT |
 | **X** | https://x.com/TapT_fun |
-| **Contact** | https://t.me/tapt_fun |
+| **Telegram** | https://t.me/tapt_fun |
 
 ---
 
@@ -366,7 +366,7 @@ The longer aim is a public binary board for stocks, FX, and crypto: the Web2 bin
 
 ## Go to market
 
-The first audience is wallet traders who already use Robinhood Chain, Solana, Base, Arbitrum, or Tempo and want a short round on a stock or a crypto price. Contact for the project is https://t.me/tapt_fun.
+The first audience is wallet traders who already use Robinhood Chain, Solana, Base, Arbitrum, or Tempo and want a short round on a stock or a crypto price. The Telegram community is https://t.me/tapt_fun.
 
 | # | Segment | Who they are | What they use today | TapT hook | Channel |
 |---|---|---|---|---|---|
@@ -447,7 +447,7 @@ The founder is one person: Amaan Sayyad, a blockchain developer and entrepreneur
 | GitHub | https://github.com/AmaanSayyad |
 | LinkedIn | https://www.linkedin.com/in/amaan-sayyad- |
 | Portfolio | https://amaan-sayyad-portfolio.vercel.app |
-| Project contact | https://t.me/tapt_fun |
+| Telegram | https://t.me/tapt_fun |
 
 The problem came from using a Web2 binary app. That account is in [Story and inspiration](#story-and-inspiration): a paper-mode win, a real-money loss, and public threads about trial results that did not match real results. The five-year wait was for a public price fast enough to settle a short round.
 
@@ -549,7 +549,7 @@ Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https
 | Leaderboard | https://tapt.fun/leaderboard |
 | GitHub | https://github.com/AmaanSayyad/TapT |
 | X | https://x.com/TapT_fun |
-| Contact | https://t.me/tapt_fun |
+| Telegram | https://t.me/tapt_fun |
 | Founder | Amaan Sayyad, Navi Mumbai |
 | Robinhood Chain | https://robinhoodchain.blockscout.com |
 | Solana | https://solscan.io |
