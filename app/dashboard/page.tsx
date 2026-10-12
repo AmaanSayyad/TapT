@@ -78,6 +78,43 @@ interface MarketToken {
 
 const MARKET_CATEGORY_ORDER = ['Crypto', 'Forex', 'Metals', 'Stocks', 'Commodities'] as const;
 
+const LEDGER_TOKEN: Record<string, { src: string; label: string; chain?: string }> = {
+    ROBINHOOD: { src: '/logos/ticker/eth.svg', label: 'ETH', chain: '/partners/robinhood.svg' },
+    ARB: { src: '/logos/ticker/eth.svg', label: 'ETH', chain: '/logos/chains/arbitrum.png' },
+    ETH: { src: '/logos/ticker/eth.svg', label: 'ETH' },
+    USDC_BASE: { src: '/logos/ticker/usdc.svg', label: 'USDC', chain: '/logos/chains/base.png' },
+    BASE: { src: '/logos/ticker/usdc.svg', label: 'USDC', chain: '/logos/chains/base.png' },
+    USDC: { src: '/logos/ticker/usdc.svg', label: 'USDC' },
+    SOL: { src: '/logos/ticker/sol.svg', label: 'SOL' },
+    OUSD: { src: '/logos/ticker/ousd.svg', label: 'OUSD', chain: '/logos/chains/tempo.png' },
+    TEMPO: { src: '/logos/ticker/ousd.svg', label: 'OUSD', chain: '/logos/chains/tempo.png' },
+    BNB: { src: '/logos/ticker/bnb.svg', label: 'BNB' },
+    SUI: { src: '/logos/ticker/sui.svg', label: 'SUI' },
+    NEAR: { src: '/logos/ticker/near.svg', label: 'NEAR' },
+    XLM: { src: '/logos/ticker/xlm.svg', label: 'XLM' },
+    XTZ: { src: '/logos/ticker/xtz.svg', label: 'XTZ' },
+    STRK: { src: '/logos/starknet-strk-logo.svg', label: 'STRK' },
+};
+
+function LedgerToken({ currency, compact = false }: { currency: string; compact?: boolean }) {
+    const mark = LEDGER_TOKEN[(currency || '').toUpperCase()];
+    if (!mark) {
+        const fallback = (currency || '').toUpperCase() === 'BYNOMO' ? 'Legacy' : currency;
+        return <span className="text-xs font-medium uppercase text-white/50">{fallback || '—'}</span>;
+    }
+    return (
+        <span className="inline-flex items-center gap-2" title={mark.label}>
+            <span className={`relative inline-flex shrink-0 ${compact ? 'h-4 w-4' : 'h-6 w-6'}`}>
+                <img src={mark.src} alt="" className={`${compact ? 'h-4 w-4' : 'h-6 w-6'} rounded-full object-cover`} />
+                {!compact && mark.chain ? (
+                    <img src={mark.chain} alt="" className="absolute -bottom-0.5 -right-1 h-3.5 w-3.5 rounded-full bg-black object-contain ring-2 ring-black" />
+                ) : null}
+            </span>
+            {compact ? null : <span className="text-xs font-medium text-white/80">{mark.label}</span>}
+        </span>
+    );
+}
+
 interface BetHistory {
     id: string;
     wallet_address: string;
@@ -1235,7 +1272,7 @@ export default function AdminDashboard() {
                                 )}
                                 {activeTab === 'users' && (
                                     <Table key="users">
-                                        <THead labels={['Identity', 'Protocol', 'Liquidity', 'Volume']} />
+                                        <THead labels={['Identity', 'Token', 'Liquidity', 'Volume']} />
                                         <tbody>
                                             {loading ? <LoadingRow /> : users
                                                 .filter(u => !searchTerm || u.user_address.toLowerCase().includes(searchTerm.toLowerCase()) || (u.username && u.username.toLowerCase().includes(searchTerm.toLowerCase())))
@@ -1255,11 +1292,13 @@ export default function AdminDashboard() {
                                                                 </a>
                                                             </div>
                                                         </td>
-                                                        <td className="px-4 py-3.5"><span className="text-xs font-black border border-white/10 rounded px-2 py-1 uppercase">{u.currency}</span></td>
+                                                        <td className="px-4 py-3.5"><LedgerToken currency={u.currency} /></td>
                                                         <td className="px-4 py-3.5 text-white font-mono font-bold">{u.balance.toFixed(4)}</td>
                                                         <td className="px-4 py-3.5 text-white font-mono font-black">
-                                                            {u.activity.totalVolume.toLocaleString()}{' '}
-                                                            <span className="text-xs font-bold text-white/30 uppercase">mixed native</span>
+                                                            <span className="inline-flex items-center gap-2">
+                                                                {u.activity.totalVolume.toLocaleString()}
+                                                                <LedgerToken currency={u.currency} compact />
+                                                            </span>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -1367,7 +1406,7 @@ export default function AdminDashboard() {
                                                         </td>
                                                                     {/* Currency */}
                                                                     <td className="px-4 py-3">
-                                                                        <span className="text-xs font-black border border-white/10 rounded px-2 py-1 uppercase">{p.currency}</span>
+                                                                        <LedgerToken currency={p.currency} />
                                                                     </td>
                                                                     {/* Joined */}
                                                                     <td className="px-4 py-3 font-mono text-white/40 text-xs whitespace-nowrap">
@@ -1861,7 +1900,7 @@ export default function AdminDashboard() {
                                                                             return (
                                                                                 <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.02]">
                                                                                     <td className="px-4 py-3 font-mono text-xs text-white/50">#{r.id}</td>
-                                                                                    <td className="px-4 py-3"><span className="text-xs font-black border border-white/10 rounded px-2 py-0.5 uppercase">{r.currency}</span></td>
+                                                                                    <td className="px-4 py-3"><LedgerToken currency={r.currency} /></td>
                                                                                     <td className="px-4 py-3 font-mono text-white font-bold">{Number(r.amount).toFixed(6)}</td>
                                                                                     <td className="px-4 py-3 text-xs text-white/30 font-mono">{r.requested_at ? new Date(r.requested_at).toLocaleString() : '—'}</td>
                                                                                     <td className="px-4 py-3">

@@ -792,7 +792,12 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
 
   // Blitz Actions
   enableBlitzAccess: () => {
-    set({ hasBlitzAccess: true });
+    set({
+      hasBlitzAccess: true,
+      gameMode: 'box',
+      activeTab: 'bet',
+      lastResult: null,
+    });
   },
 
   revokeBlitzAccess: () => {

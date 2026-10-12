@@ -6,12 +6,14 @@ export function getReferralShareTweetText(): string {
   return [
     'THIS PLATFORM IS INSANE.⚡️',
     '',
-    'TapT — short charts for crypto, stocks, metals, and FX. Rounds run from 5 seconds to 1 minute.',
+    'TapT.fun - short charts for crypto, stocks, metals, and FX. Rounds run from 5 seconds to 1 minute.',
     '',
     'Open TapT from my link and the join is counted on my wallet.',
     '',
-    'Stop watching. Start trading. Try it now: 🔥👇',
-  ].join('\n');
+    'Stop watching. Start trading.', 
+    '',
+    'Try it now: 🔥👇',
+    ].join('\n');
 }
 
 export function referralLandingUrl(referralCode: string): string {
