@@ -2,79 +2,92 @@
 
 Binary options trading platform for crypto, stocks, metals, and FX. A round lasts 5 seconds to 1 minute and settles from a house balance.
 
-The product name is TapT. The site and referrals stay on tapt.fun. The repository is [TapT](https://github.com/AmaanSayyad/TapT).
-
 | | |
 |---|---|
 | **Site** | https://tapt.fun |
+| **Trade** | https://tapt.fun/trade |
+| **Litepaper** | https://tapt.fun/litepaper |
 | **GitHub** | https://github.com/AmaanSayyad/TapT |
 | **Contact** | https://t.me/amaan029 |
 
 ---
 
-## Table of Contents
+## Story and inspiration
 
-1. [Overview](#overview)
-2. [How a round works](#how-a-round-works)
-3. [Trader modes](#trader-modes)
-4. [Chains and wallets](#chains-and-wallets)
-5. [House balance](#house-balance)
-6. [Fees](#fees)
-7. [Prices](#prices)
-8. [Tech stack](#tech-stack)
-9. [Architecture](#architecture)
-10. [Database](#database)
-11. [API](#api)
-12. [Admin dashboard](#admin-dashboard)
-13. [Directory](#directory)
-14. [Environment](#environment)
-15. [Local development](#local-development)
-16. [Deployment](#deployment)
-17. [Security](#security)
+In 2021, I saw an advertisement for a forex binary options app called Binomo. It was a mobile app promoted by big influencers. I tried the free paper mode and made 10× in a week. Then I put in three months of savings in real mode, and lost it all.
+
+Later I found Reddit threads showing that Binomo ran on algorithms that let users win in trial mode and lose in real mode. This happened to millions of traders.
+
+That day I decided to build a transparent binary options platform, with the settlement price coming from a public feed instead of a hidden book. In 2021, a sub-second price on a wallet chart was not something I could ship. I waited five years. In 2026 the tools were ready. TapT is the result.
+
+Robinhood Chain is the home network. Stocks on the chart read the Chainlink feed there. Solana, Base, Arbitrum, and Tempo are the other live desks.
 
 ---
 
-## Overview
+## The problem
 
-TapT is a binary options trading platform. A trader connects a wallet, deposits that chain’s asset into the treasury, and receives a house balance. Rounds debit that balance. A win pays the stake times the multiplier back into the same balance. The stake is not sent on-chain for every round.
-
-Crypto, stocks, metals, and FX share one chart. Robinhood Chain is the primary chain. Solana, Base, Arbitrum, and Tempo follow, in that order.
-
-Each chain has its own treasury and its own house balance. Robinhood Chain uses ETH. Solana uses native SOL. Base uses USDC, Arbitrum uses ETH, and Tempo uses OUSD. There is no project token in the app.
-
----
-
-## How a round works
-
-```
-1. Fund
-   Connect a wallet on one of the five chains.
-   Send that chain’s asset to its treasury.
-   The net amount, after the fee, is credited as a house balance.
-
-2. Place
-   Pick Classic, Box, or Draw.
-   Set the stake from the house balance.
-   Classic also sets a window: 5s, 10s, 15s, 30s, or 60s.
-
-3. Settle
-   The stake leaves the house balance immediately. No wallet signature.
-   The round settles against the live chart price.
-   A win credits stake × multiplier. A miss pays zero.
-```
-
-Deposits, withdrawals, and payouts are recorded in the ledger. The chart price is the settlement price. A market with no quote stays blank, and a round is not settled against a blank quote.
+- Binary options in Web3 still are not a production product. Web2 apps such as Binomo and IQ Option are opaque. Traders do not custody the balance, and they cannot check the price that settled the round.
+- A round is a few seconds long. A wallet signature on every stake is slower than the round.
+- Stock, metal, and FX charts and crypto wallets sit in different products.
+- A payout sent on the wrong chain never arrives. Each chain needs its own treasury and its own house balance.
 
 ---
 
-## Trader modes
+## The solution
 
-### Classic
+TapT separates funding from the round.
 
-Higher or Lower against the open price. The open is the price when the round starts.
+1. The trader connects a wallet. Robinhood Chain is first.
+2. They deposit that chain’s asset into that chain’s treasury and receive a house balance.
+3. Classic, Box, and Draw debit that balance. There is no wallet signature on the stake.
+4. The round settles against the live chart. A win credits `stake × multiplier`. A miss pays zero.
+5. A withdrawal sends the asset from that chain’s treasury back to the wallet.
 
-- Higher wins when the close is above the open.
-- Lower wins when the close is below the open.
+The chart fills a price from the first source that answers:
+
+1. Stocks use the Chainlink feed on Robinhood Chain.
+2. Anything still missing uses Hyperliquid mids.
+3. Anything still missing uses public quotes.
+
+The chart asks about once a second. `PYTH_PRO_ENABLE` stays `false`. The price route is still named `/api/pyth/latest`. The desk does not depend on that flag.
+
+There is no project token. The play assets are ETH on Robinhood Chain, SOL on Solana, USDC on Base, ETH on Arbitrum, and OUSD on Tempo.
+
+---
+
+## Who it is for
+
+| Reader | What they use TapT for |
+|---|---|
+| Wallet traders | A 5s to 60s round without a signature on every stake |
+| People who left Web2 binary apps | A round they can check against a public price, with the balance in their wallet until they deposit |
+| Stock and FX watchers | The same chart for equities, metals, and FX, with Robinhood Chain as the primary desk |
+| Operators | The dashboard for treasury balances, the review queue, and invite codes |
+
+---
+
+## Features
+
+- One chart for crypto, stocks, metals, and FX.
+- Classic Higher/Lower, Box tiles, and Draw rectangles.
+- Blitz on Box: a $0.10 entry, paid to that chain’s treasury, with marked cells at 2×.
+- Demo balance in the browser, kept out of the live ledger.
+- SMA 20, Bollinger bands (20, 2), Alligator, and RSI 14 on the same ticks.
+- One house balance per wallet and per chain asset.
+- Deposits and withdrawals at 1% (Free), 0.9% (Standard), and 0.8% (VIP).
+- Withdrawals at or under $10 pay immediately. Above $10 they wait for review.
+- Referrals at `https://tapt.fun/?ref=`.
+
+---
+
+## Classic
+
+Select Higher or Lower, set the window, and stake from the house balance.
+
+The strike is the chart price when the round starts.
+
+- Higher wins when the close is above the strike.
+- Lower wins when the close is below the strike.
 - A tie pays zero.
 
 | Window | Multiplier |
@@ -85,60 +98,169 @@ Higher or Lower against the open price. The open is the price when the round sta
 | 30s | 1.90× |
 | 60s | 1.95× |
 
-### Box
-
-The chart shows a grid of tiles. Each tile is a price band and shows its multiplier. The trader taps a tile. The round wins when the live price is inside that band.
-
-### Draw
-
-The trader draws a rectangle to the right of the live price. The rectangle is the band. It wins when the close at the end of the band is still inside it. The band cannot be taller than 20% of the chart or wider than 20 seconds.
-
-### Blitz
-
-Blitz is an overlay on Box, not a fourth mode. A window opens on a repeating cycle. The entry fee is $0.10, paid on-chain in that chain’s asset to that chain’s treasury, not from the house balance. Marked cells in that window pay 2×.
-
-### Demo
-
-Demo uses a practice balance on this browser. It is not the house ledger and it is not on-chain. Admin stats keep live rounds and demo rounds apart.
-
-The chart can show SMA 20, Bollinger bands (20, 2), Alligator, and RSI 14. Those lines use the same ticks as the price path.
+At 1.90×, a trader breaks even near a 52.6% win rate. Shorter windows pay less and need a higher win rate to break even.
 
 ---
 
-## Chains and wallets
+## Box
+
+The live chart shows a grid of tiles. Each tile is a price band and shows its multiplier. The trader taps a tile.
+
+A tile defines `priceBottom`, `priceTop`, the moment the price line reaches that column, and the multiplier.
+
+The round wins when the live price is inside that band as the line reaches the tile. A tighter band pays more. A wider band is easier and pays less. Corner tiles, farther from the current price, pay more because the line is less likely to land there.
+
+Blitz can mark cells in the active window at 2×.
+
+---
+
+## Draw
+
+The trader draws a rectangle to the right of the live price. The rectangle is their own band and time window. The multiplier is shown as the box is drawn.
+
+The rectangle defines `priceBottom`, `priceTop`, `startTime` on the left edge, and `endTime` on the right edge. The left edge has to sit in the future.
+
+The round wins when the price stays inside `[priceBottom, priceTop]` from the left edge through the right edge.
+
+The multiplier rises when the box is smaller, farther from the current price, or shorter. The box cannot be taller than 20% of the chart or wider than 20 seconds. A box that is too small to draw is rejected.
+
+---
+
+## Blitz
+
+Blitz is an overlay on Box, not a fourth mode.
+
+```
+[──── BLITZ ACTIVE (1 min) ────][──── COOLDOWN (2 min) ────][── BLITZ ACTIVE ──]
+```
+
+The entry fee is **$0.10**, paid once per window, on-chain, in that chain’s asset, to **that chain’s treasury**. It is not taken from the house balance, and it is not sent to the platform fee wallet.
+
+During the active minute, marked cells pay 2× on top of the tile multiplier. USDC and OUSD charge exactly $0.10. ETH and SOL charge the token amount that equals $0.10 at the current price.
+
+---
+
+## Chains and treasuries
 
 Robinhood Chain is the primary chain and the default connection. Solana, Base, Arbitrum, and Tempo follow, in that order.
 
-| Chain | Asset | How you connect | Explorer |
+The four EVM treasuries are the same address. A transfer arrives only on the chain it is sent on. Solana has its own address. Secret keys stay in `.env` and in the host environment. They are not in this file.
+
+| Order | Chain | Asset | What to fund | Treasury | Explorer |
+|---|---|---|---|---|---|
+| 1 | Robinhood Chain | ETH | ETH, for payouts and gas | `0xCBae80461Bb820e4075035F765f8a46fA65a6ded` | [address](https://robinhoodchain.blockscout.com/address/0xCBae80461Bb820e4075035F765f8a46fA65a6ded) |
+| 2 | Solana | SOL | SOL, for payouts and fees | `CJGXQbBK2tDjeoLxcU7Dt3buDjaLUWyK3ieG5mHneETZ` | [account](https://solscan.io/account/CJGXQbBK2tDjeoLxcU7Dt3buDjaLUWyK3ieG5mHneETZ) |
+| 3 | Base | USDC | USDC for payouts, plus a little ETH for gas | `0xCBae80461Bb820e4075035F765f8a46fA65a6ded` | [address](https://basescan.org/address/0xCBae80461Bb820e4075035F765f8a46fA65a6ded) |
+| 4 | Arbitrum | ETH | ETH, for payouts and gas | `0xCBae80461Bb820e4075035F765f8a46fA65a6ded` | [address](https://arbiscan.io/address/0xCBae80461Bb820e4075035F765f8a46fA65a6ded) |
+| 5 | Tempo | OUSD | OUSD, for payouts and the network fee | `0xCBae80461Bb820e4075035F765f8a46fA65a6ded` | [address](https://explore.tempo.xyz/address/0xCBae80461Bb820e4075035F765f8a46fA65a6ded) |
+
+| Chain | How you connect | Chain id | Play token |
 |---|---|---|---|
-| Robinhood Chain | ETH | EVM wallet list | https://robinhoodchain.blockscout.com |
-| Solana | SOL | Phantom or Backpack | https://solscan.io |
-| Base | USDC | EVM wallet list | https://basescan.org |
-| Arbitrum | ETH | EVM wallet list | https://arbiscan.io |
-| Tempo | OUSD | EVM wallet list | https://explore.tempo.xyz |
+| Robinhood Chain | EVM wallet list | 4663 | Native ETH. RPC `https://rpc.mainnet.chain.robinhood.com` |
+| Solana | Phantom or Backpack | mainnet-beta | Native SOL |
+| Base | EVM wallet list | 8453 | USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, 6 decimals |
+| Arbitrum | EVM wallet list | 42161 | Native ETH. Public RPC `https://arb1.arbitrum.io/rpc` |
+| Tempo | EVM wallet list | 4217 | OUSD `0x20c0000000000000000000006a37da5c996874be`, 6 decimals |
 
 Solana is forced to mainnet-beta. A Solana transfer includes a priority fee. A Tempo transfer uses `transferWithMemo`. The memo is the recipient address, left-padded to 32 bytes, and the fee is extra OUSD.
 
-Robinhood Chain and Arbitrum balances are ETH. Base is USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, 6 decimals). Tempo is OUSD (`0x20c0000000000000000000006a37da5c996874be`, 6 decimals).
+Platform fees do not go to the treasuries.
 
-Older chain folders still exist in `lib/`. They are not in the connect list.
+| Wallet | Address | Chains |
+|---|---|---|
+| EVM fee wallet | `0x9B4d9039A96Bfd7320C865aaCC69F35b51f425a7` | Robinhood Chain, then Base, Arbitrum, and Tempo |
+| Solana fee wallet | `FrhyCAurK5ofXYUz6G4okUwBqfTFKbLJXrVJDrK5SEFu` | Solana |
 
 ---
 
-## House balance
+## Settlement architecture
 
-- One balance row per wallet and currency.
-- A round calls `deduct_balance_for_bet`. A win calls `credit_balance_for_payout`. Both write `balance_audit_log`.
-- The server checks `bet_id` before a payout, so the same round is not credited twice.
-- The client removes the round from the active list before the payout request, so a slow response cannot settle it twice.
+```
+┌─────────────────────────────────────────────────────────────┐
+│  OFF-CHAIN (Supabase)                                       │
+│  user_balances          balance per wallet and asset        │
+│  balance_audit_log      every debit and credit              │
+│  bet_history            settled rounds                      │
+│  user_sessions          time on the desk                    │
+└─────────────────────────────────────────────────────────────┘
+         ▲
+         │  balance RPCs and session pings
+┌────────┴────────────────────────────────────────────────────┐
+│  CLIENT (Next.js + Zustand)                                 │
+│  Chart price: Chainlink, then Hyperliquid, then quotes      │
+│  Round state: active rounds and settled rounds              │
+│  Resolution: the chart price at the end of the round        │
+└──────────────────────────────────────────────────────────────┘
+         ▲
+         │  deposits, withdrawals, and the Blitz entry
+┌────────┴────────────────────────────────────────────────────┐
+│  ON-CHAIN                                                   │
+│  Robinhood Chain, Solana, Base, Arbitrum, Tempo             │
+│  One treasury per chain holds deposited funds               │
+│  Fee wallets receive the deposit and withdrawal fee         │
+│  The Blitz $0.10 goes to that chain’s treasury              │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Deposits
+```mermaid
+sequenceDiagram
+  actor Trader
+  participant App as TapT
+  participant Wallet
+  participant Chain as Treasury chain
+  participant API as Balance API
+  participant DB as Postgres
 
-The trader sends that chain’s asset to its treasury. The server checks the transaction, takes the tier fee, and credits the rest.
+  Trader->>App: Connect, Robinhood Chain first
+  App->>Wallet: Request the deposit
+  Wallet->>Chain: Send ETH, SOL, USDC, or OUSD to that treasury
+  Chain-->>App: Transaction hash
+  App->>API: POST /api/balance/deposit
+  API->>Chain: Read the transfer
+  API->>DB: update_balance_for_deposit
+  DB-->>Trader: House balance credited, fee removed
+```
 
-### Withdrawals
+```mermaid
+sequenceDiagram
+  actor Trader
+  participant App as TapT
+  participant API as Balance API
+  participant DB as Postgres
 
-The trader signs this message on Robinhood Chain, Base, Arbitrum, and Tempo. The server rejects a signature older than five minutes.
+  Trader->>App: Stake, mode, and window
+  App->>API: POST /api/balance/bet
+  API->>DB: deduct_balance_for_bet
+  Note over App: Round runs on the chart
+  alt Close wins
+    App->>API: POST /api/balance/win
+    API->>DB: credit_balance_for_payout
+  else Close misses
+    Note over App: Payout is zero
+  end
+  App->>API: POST /api/bets/save
+```
+
+```mermaid
+sequenceDiagram
+  actor Trader
+  participant Wallet
+  participant API as Withdraw API
+  participant Treasury
+  participant DB as Postgres
+
+  Trader->>Wallet: Sign the TapT withdrawal message
+  Wallet-->>API: Signature, amount, currency
+  alt Amount is at or under $10
+    API->>Treasury: Send the net amount on that chain
+    Treasury-->>API: Transaction hash
+    API->>DB: update_balance_for_withdrawal
+  else Amount is above $10
+    API->>DB: Queue the request for review
+  end
+```
+
+The EVM withdrawal message is:
 
 ```
 TapT withdrawal authorization
@@ -148,238 +270,161 @@ currency:${currency}
 signedAt:${signedAt}
 ```
 
-Withdrawals at or under $10 complete immediately on every chain. Anything above $10 waits for review.
-
-A mainnet withdrawal cannot exceed `total deposited × 1.08`. From the 11th withdrawal onward, the request waits in the manual queue.
-
-### Fees
-
-Deposits and withdrawals take 1% on Free, 0.9% on Standard, and 0.8% on VIP. The fee comes off the amount. `calculateFeeAmount` floors it to 8 decimals.
-
-The EVM fee wallet covers Robinhood Chain first, then Base, Arbitrum, and Tempo. Solana uses `NEXT_PUBLIC_PLATFORM_FEE_WALLET_SOL`. Those wallets are separate from the treasuries.
-
-The Blitz entry fee is $0.10, paid once per window to that chain’s treasury. It is not taken from the house balance.
-
-### Referrals
-
-Each wallet gets a code. A new wallet that opens TapT from that link is counted once, when it registers. The count is not a payout. Links use `https://tapt.fun/?ref=`.
-
-### Access codes and waitlist
-
-Invite codes live in `access_codes`. The waitlist collects email at `/waitlist`. Both are managed from the admin dashboard.
-
----
-
-## Fees
-
-Deposits and withdrawals take 1% on Free, 0.9% on Standard, and 0.8% on VIP. `calculateFeeAmount` floors the fee to 8 decimals. The EVM fee wallet covers Robinhood Chain first, then Base, Arbitrum, and Tempo. Solana uses `NEXT_PUBLIC_PLATFORM_FEE_WALLET_SOL`. Those wallets are separate from the treasuries.
-
-The Blitz entry fee is $0.10, paid once per window to that chain’s treasury. It is not taken from the house balance.
-
----
-
-## Prices
-
-Each asset uses the first source that returns a live price.
-
-1. Stocks use the Chainlink feed on Robinhood Chain.
-2. Anything still missing uses Hyperliquid mids.
-3. Anything still missing uses public quotes.
-
-The chart asks about once a second and keeps the last good price if a request fails. `PYTH_PRO_ENABLE` stays `false`. The platform does not depend on that flag.
+The server rejects a signature older than five minutes. A mainnet withdrawal cannot exceed `total deposited × 1.08`.
 
 ---
 
 ## Tech stack
 
-| Frontend | Wallets | Server |
-|---|---|---|
-| Next.js 16, App Router, Turbopack | Robinhood Chain first, through ConnectKit and wagmi. Then Solana (Phantom, Backpack), Base, Arbitrum, and Tempo | Next.js route handlers |
-| React 19, TypeScript | Solana uses web3.js and wallet-adapter | Supabase Postgres and RPCs |
-| Tailwind CSS v4 | | Chainlink on Robinhood Chain, Hyperliquid mids, public quotes |
-| Zustand | | |
-
-Package manager is Yarn v1 through Corepack. Node 22.
+| Frontend | Wallets | Server | Tooling |
+|---|---|---|---|
+| Next.js 16, App Router, Turbopack | ConnectKit, wagmi, and viem for Robinhood Chain, Base, Arbitrum, and Tempo | Next.js route handlers on Vercel | ESLint 9 |
+| React 19 and TypeScript | Solana web3.js and wallet-adapter, Phantom and Backpack | Supabase Postgres and RPCs | Jest and Testing Library |
+| Tailwind CSS v4 | | Chainlink on Robinhood Chain, Hyperliquid mids, public quotes | Yarn v1 through Corepack, Node 22 |
+| Zustand | | ethers 6 for EVM treasury sends | Vercel Analytics and Speed Insights |
+| TanStack Query, Framer Motion, d3-shape | | PostHog | |
 
 ---
 
-## Architecture
+## Monetization
 
-| Slice | What it holds |
+TapT earns on flow. There is no project token.
+
+### 1. Platform fees
+
+Deposits and withdrawals pay a tier fee. The fee moves from the treasury to the fee wallet. It is not left in the treasury.
+
+| Tier | Fee |
 |---|---|
-| `walletSlice` | Address, network, preferred network |
-| `gameSlice` | Mode, asset, price, active and settled rounds, tour |
-| `balanceSlice` | House balance, demo balance, tier |
-| `historySlice` | Local round history |
-| `referralSlice` | Code and count |
-| `profileSlice` | Username and recent rounds |
+| Free | 1% |
+| Standard | 0.9% |
+| VIP | 0.8% |
 
-They combine into `useOverflowStore` in `lib/store/index.ts`.
+`calculateFeeAmount` floors the fee to 8 decimals.
 
-```mermaid
-flowchart LR
-  U[Trader] --> FE[Next.js platform]
-  FE --> W[Wallet]
-  W --> RH[Robinhood Chain ETH]
-  W --> SOL[Solana SOL]
-  W --> BASE[Base USDC]
-  W --> ARB[Arbitrum ETH]
-  W --> TEMPO[Tempo OUSD]
-  FE --> API[Balance and round routes]
-  API --> DB[(Postgres)]
-  FE --> PX[Price route]
-  PX --> CL[Chainlink]
-  PX --> HL[Hyperliquid]
-  PX --> PQ[Public quotes]
-```
+### 2. Round pricing
 
-```mermaid
-flowchart TD
-  A[Stake from house balance] --> B[POST /api/balance/bet]
-  B --> C[deduct_balance_for_bet]
-  C --> D[Round runs on the chart]
-  D --> E{Win?}
-  E -- Yes --> F[POST /api/balance/win]
-  F --> G[credit_balance_for_payout]
-  E -- No --> H[Payout is zero]
-  D --> I[POST /api/bets/save]
-```
+Classic multipliers sit below 2×. At 1.90×, break-even is about a 52.6% win rate. At 1.75×, break-even is about 57.1%. Box and Draw pay more when the band is tighter or farther from the current price. The admin gameplay tab separates live rounds from demo rounds.
 
----
+### 3. Blitz entry
 
-## Database
+$0.10 once per window, in that chain’s asset, sent to that chain’s treasury.
 
-| Table | Purpose |
+These figures are the live rates. They are not a forecast of volume.
+
+| Monthly round volume, if it is reached | Fee plus round-pricing range used for planning |
 |---|---|
-| `user_balances` | Balance per wallet and currency, plus tier |
-| `balance_audit_log` | Deposit, withdrawal, bet, payout, fee |
-| `bet_history` | Settled rounds |
-| `user_profiles` | Username |
-| `user_referrals` | Code, referred-by, count |
-| `access_codes` | Invite codes |
-| `waitlist` | Emails |
-| `user_sessions` | Time on the desk |
-| `withdrawal_requests` | Review queue |
+| About $5M | About $250k to $500k |
+| About $20M | About $400k to $2.0M |
 
-| RPC | Purpose |
+---
+
+## Market
+
+| Segment | Signal | Why it matters |
+|---|---|---|
+| Binary options | A large retail market for fast up/down outcomes | Traders already understand a short round |
+| Crypto prediction markets | Polymarket and Kalshi showed demand for a public settlement price | Those markets resolve in hours or days, not 5 seconds |
+| Crypto derivatives | Perps volume is the speculative base | TapT is a fixed window, not a liquidated position |
+| TapT | Robinhood Chain first, then Solana, Base, Arbitrum, and Tempo | One chart, five treasuries, a house balance between them |
+
+---
+
+## Competitive landscape
+
+TapT is a short binary round on a public price. It is not a perps venue and it is not an event market.
+
+| Segment | Examples | Compared with TapT |
+|---|---|---|
+| Web2 binary options | Binomo, IQ Option, Quotex | The price and the book are not visible. Funds sit with the operator. |
+| Crypto prediction markets | Polymarket, Kalshi, Azuro | “Will X happen?” resolves in hours or days, not in 5s to 1m. |
+| Crypto derivatives | Binance, Bybit, OKX | Funding, leverage, and liquidation. No fixed-expiry binary round. |
+| On-chain options | Dopex, Lyra, Premia | Calls and puts, heavier interface, not a 30-second up/down. |
+| Fast trading apps | Single-chain perps | Not a binary loop across Robinhood Chain, Solana, Base, Arbitrum, and Tempo. |
+
+---
+
+## Roadmap
+
+| Next | What it changes |
 |---|---|
-| `update_balance_for_deposit` | Credit a deposit |
-| `deduct_balance_for_bet` | Debit a stake |
-| `credit_balance_for_payout` | Credit a win |
-| `update_balance_for_withdrawal` | Debit a withdrawal |
-| `increment_referral_count` | Add one joined wallet |
+| Robinhood Chain markets | More Chainlink equities on the primary chain |
+| More assets | More crypto, FX, stocks, and commodities on the same chart |
+| P2P Classic | Match a round between traders instead of only against the house balance, so the treasury is not the only backstop |
+| Optional leverage | A 1× to 100× stake multiplier, off by default |
+| Trader profiles | Highest P&L, most accurate, largest risk |
+| Tournaments | Optional scheduled boards |
+| Social trading | Follow, copy, and a public board |
+| Mobile | A layout that is comfortable on a phone |
+| WalletConnect | Turn the connector back on with a registered project id |
 
-Writes use the service role on the server. Migrations are in `supabase/migrations/`.
-
----
-
-## API
-
-### Balance and rounds
-
-| Method | Route | Purpose |
-|---|---|---|
-| `GET` | `/api/balance/[address]` | House balance for a wallet |
-| `POST` | `/api/balance/deposit` | Record a deposit |
-| `POST` | `/api/balance/withdraw` | Send a withdrawal |
-| `POST` | `/api/balance/bet` | Debit a stake |
-| `POST` | `/api/balance/win` | Credit a win |
-| `POST` | `/api/bets/save` | Store a settled round |
-| `GET` | `/api/bets/history` | Recent rounds |
-| `GET` | `/api/bets/leaderboard` | Public board |
-
-### Account
-
-| Method | Route | Purpose |
-|---|---|---|
-| `GET` / `POST` | `/api/referral` | Code, count, and the public referrer list |
-| `POST` | `/api/validate-access-code` | Check an invite code |
-| `POST` / `DELETE` | `/api/session/ping` | Session time |
-| `GET` | `/api/withdrawals` | That wallet’s withdrawal requests |
-| `GET` | `/api/stats/public` | Public totals for the home page |
-
-### Prices
-
-| Method | Route | Purpose |
-|---|---|---|
-| `GET` / `POST` | `/api/pyth/latest` | Latest prices for the chart |
-
-The route name is historical. The desk fills prices from Chainlink, Hyperliquid, then public quotes.
-
-### Admin
-
-All of these require the admin session from `DASHBOARD_PASSWORD`.
-
-| Method | Route | Purpose |
-|---|---|---|
-| `POST` | `/api/admin/auth` | Log in |
-| `POST` | `/api/admin/logout` | Log out |
-| `GET` | `/api/admin/stats` | Live and demo totals |
-| `GET` | `/api/admin/mode-analytics` | Totals by mode |
-| `GET` | `/api/admin/player-ledger` | Per-wallet ledger |
-| `GET` | `/api/admin/users` | Ledger rows |
-| `GET` | `/api/admin/transactions` | Deposits and withdrawals |
-| `GET` | `/api/admin/game-history` | Settled rounds |
-| `GET` | `/api/admin/treasury-balances` | On-chain treasury balances |
-| `GET` | `/api/admin/wallet-insights` | One wallet, across the ledger |
-| `GET` | `/api/admin/waitlist` | Waitlist |
-| `GET` / `POST` | `/api/admin/access-codes` | Invite codes |
-| `GET` | `/api/admin/withdrawal-requests/pending` | Review queue |
-| `POST` | `/api/admin/withdrawal-requests/[id]/accept` | Accept |
-| `POST` | `/api/admin/withdrawal-requests/[id]/reject` | Reject |
+The longer aim is a public binary board for stocks, FX, and crypto: the Web2 binary app, with the price and the payout visible, on Robinhood Chain first.
 
 ---
 
-## Admin dashboard
+## Go to market
 
-`/dashboard` is behind the access key. The key signs a cookie. It is not stored in the browser as the password.
+The first audience is wallet traders who already use Robinhood Chain, Solana, Base, Arbitrum, or Tempo and want a short round on a stock or a crypto price. Contact for the project is https://t.me/amaan029.
 
-The top of the page switches between live rounds and demo rounds. Under that: treasury balances, then the section tabs.
+| # | Segment | Who they are | What they use today | TapT hook | Channel |
+|---|---|---|---|---|---|
+| 1 | DeFi traders | Options, spot, and perps | Funding, liquidation, and a slow ticket | A 5s round, no liquidation, no signature on the stake | Trading groups and Telegram |
+| 2 | Web2 binary users | People who used Binomo, IQ Option, or Quotex | A book they cannot check | A public chart price and a wallet | Reddit, YouTube, search |
+| 3 | Creators and communities | Trading groups that want a clip, not a whitepaper | No on-chain binary loop | Box, Draw, Blitz, and a shareable result | Short clips and ambassadors |
+| 4 | Robinhood Chain | The priority ecosystem | No short binary round on the stock feed | Chainlink equities and ETH as the play asset | Robinhood Chain community, first |
+| 5 | Solana, Base, Arbitrum, Tempo | Each chain’s own community | A round that only exists on some other network | Native SOL, USDC, ETH, or OUSD from the same UI | That chain’s groups, after Robinhood Chain |
 
-| Tab | What it shows |
+### Phase 0
+
+Invite testing on Robinhood Chain and Solana. Fee routing, settlement, and the house balance are the checks that matter. PostHog is wired for landing, demo, deposit, and round.
+
+### Phase 1
+
+| Action | Detail |
 |---|---|
-| Wallet | One address: balances, audit, rounds, withdrawals, time on the desk |
-| Ledger | Wallets and house balances |
-| Player P&L | Deposited, withdrawn, available, net |
-| Gameplay | Mode totals and round history |
-| Financials | Deposit and withdrawal stream, plus the review queue |
-| Markets | Assets the chart can price |
-| Referrals | Referrer counts |
-| Waitlist | Emails |
-| Access codes | Generate and export invite codes |
-| Danger | Frequency review and bans |
+| Public site | https://tapt.fun |
+| Robinhood Chain first | The connect list and the stock chart lead with that chain |
+| Then Solana, Base, Arbitrum, Tempo | Each treasury funded in its own asset |
+| Referral link | `https://tapt.fun/?ref=` counts one new wallet when it registers |
+| Demo | A full round with no wallet, then a deposit into the real balance |
+
+### Phase 2
+
+Ambassador notes, a weekly conversation with traders, Blitz windows with a stated prize if one is funded, public profiles, and a Telegram note before a Blitz window. Grants, if any, start with the Robinhood Chain track and then Solana, Base, Arbitrum, and Tempo.
+
+### Phase 3
+
+P2P Classic, more assets, a mobile layout, and wallet entry points that already exist: Phantom, Backpack, and the EVM wallet list.
+
+| Mechanic | How it works |
+|---|---|
+| Referral link | A new wallet that arrives from `?ref=` is counted once |
+| Demo then deposit | The round can be tried before a treasury transfer |
+| Blitz window | One minute on, two minutes off, so the desk has a reason to be open |
+| Five chains | Robinhood Chain is the acquisition story. The other four are their own communities |
+| Result clips | A settled round is a screenshot, not a thread |
+
+Planning ranges, not current results:
+
+| | Conservative | Base | Optimistic |
+|---|---|---|---|
+| Average deposit | $50 | $150 | $400 |
+| Fee on that deposit at 1% | $0.50 | $1.50 | $4 |
+| Average withdrawal | $40 | $120 | $350 |
+| Fee on that withdrawal at 1% | $0.40 | $1.20 | $3.50 |
+| Blitz entries per user each month | 2 | 5 | 15 |
+| Blitz fees | $0.20 | $0.50 | $1.50 |
 
 ---
 
-## Directory
+## Why now
 
-```
-app/
-  page.tsx            home
-  trade/              chart
-  litepaper/          how the platform works
-  leaderboard/
-  profile/
-  referrals/
-  withdrawals/
-  dashboard/          admin
-  api/                route handlers
-components/
-  game/               board and chart
-  wallet/             connect
-  balance/            deposit and withdraw
-  tour/               first-connect guide
-lib/
-  store/              Zustand slices
-  fees/               tier fees and blitz fees
-  solana/             Solana client and priority fee
-  server/             price pipeline
-docs/
-  ENVIRONMENT.md
-  CONTRIBUTING.md
-  SECURITY_REPORTING.md
-supabase/migrations/
-```
+| Signal | Detail |
+|---|---|
+| The wait | In 2021 a public sub-second chart on a wallet was not shippable. In 2026 Chainlink on Robinhood Chain, plus Hyperliquid and public quotes, can fill the chart about once a second. |
+| The chain | Robinhood Chain is the priority. Stocks and the default wallet are the same network. |
+| The product | Deposits, house balances, and withdrawals already run on the five treasuries. |
+| The gap | Web2 binary apps are restricted in many places. A short on-chain round is still rare. |
 
 ---
 
@@ -387,7 +432,7 @@ supabase/migrations/
 
 One file: `.env`. Do not add `.env.local` or `.env.example`. Next.js would let `.env.local` override `.env`. Do not commit `.env`.
 
-Names only. Values stay in `.env`. The full list is `docs/ENVIRONMENT.md`.
+`DASHBOARD_PASSWORD` must be quoted if the value contains `#`.
 
 | Use | Names |
 |---|---|
@@ -405,16 +450,29 @@ Names only. Values stay in `.env`. The full list is `docs/ENVIRONMENT.md`.
 | Prices | `PYTH_PRO_ENABLE` |
 | Analytics | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` |
 
-`DASHBOARD_PASSWORD` must be quoted in `.env` if the value contains `#`.
+`NEXT_PUBLIC_SOLANA_NETWORK` stays `mainnet-beta`. `PYTH_PRO_ENABLE` stays `false`. Names are also listed in `docs/ENVIRONMENT.md`.
 
 ---
 
-## Local development
+## Run locally
 
 Node 22. Yarn through Corepack.
 
+1. Install dependencies.
+
 ```bash
 corepack yarn
+```
+
+2. Keep a single `.env`. Use the treasury addresses in the table above. Put secret keys only in `.env`.
+
+3. Apply `supabase/migrations/` to the Supabase project. Balances, rounds, and referrals read those tables.
+
+4. Fund each treasury on its own chain, using the asset column in the treasury table.
+
+5. Start the app.
+
+```bash
 corepack yarn dev
 ```
 
@@ -426,44 +484,43 @@ corepack yarn lint
 corepack yarn test
 ```
 
-Apply database migrations from `supabase/migrations/` to the Supabase project before balances, rounds, or referrals will load.
+Production is https://tapt.fun on Vercel. `NEXT_PUBLIC_APP_URL` there is `https://tapt.fun`. TypeScript errors block the build. The compiler target is ES2022.
 
 ---
 
-## Deployment
+## API
 
-The app is a Next.js App Router project and deploys on Vercel.
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/api/balance/[address]` | House balance |
+| `POST` | `/api/balance/deposit` | Record a deposit |
+| `POST` | `/api/balance/withdraw` | Send a withdrawal |
+| `POST` | `/api/balance/bet` | Debit a stake |
+| `POST` | `/api/balance/win` | Credit a win |
+| `POST` | `/api/bets/save` | Store a settled round |
+| `GET` | `/api/bets/history` | Recent rounds |
+| `GET` | `/api/bets/leaderboard` | Public board |
+| `GET` / `POST` | `/api/pyth/latest` | Latest chart prices |
+| `GET` | `/api/robinhood/stocks` | Robinhood Chain stock quotes |
 
-- `next.config.ts` sets the content security policy, frame policy, and API CORS.
-- TypeScript errors block the build (`ignoreBuildErrors` is false).
-- Set the same names from `.env` in the host’s environment. Do not commit the values.
-
----
-
-## Security
-
-- EVM withdrawals require the signed TapT message above. A signature older than five minutes is rejected.
-- Mainnet withdrawals are capped at 1.08× the amount that wallet has deposited.
-- From the 11th withdrawal, the request waits for review.
-- A payout is skipped when that `bet_id` is already in the audit log.
-- Banned wallets are blocked from deposits, rounds, and withdrawals.
-- Admin routes check the signed session from `DASHBOARD_PASSWORD`.
-- Database writes use the service role on the server.
+Admin routes require the session from `DASHBOARD_PASSWORD`. The dashboard is `/dashboard`.
 
 Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https://t.me/amaan029.
 
 ---
 
-## Pages
+## Links
 
-| Path | Page |
+| | |
 |---|---|
-| `/` | Home |
-| `/trade` | Chart |
-| `/litepaper` | How the platform works |
-| `/leaderboard` | Settled rounds |
-| `/profile` | House balance and fee tier |
-| `/referrals` | Referral count |
-| `/withdrawals` | Withdrawal requests |
-| `/dashboard` | Admin |
-| `/waitlist` | Email capture |
+| Site | https://tapt.fun |
+| Trade | https://tapt.fun/trade |
+| Litepaper | https://tapt.fun/litepaper |
+| Leaderboard | https://tapt.fun/leaderboard |
+| GitHub | https://github.com/AmaanSayyad/TapT |
+| Contact | https://t.me/amaan029 |
+| Robinhood Chain | https://robinhoodchain.blockscout.com |
+| Solana | https://solscan.io |
+| Base | https://basescan.org |
+| Arbitrum | https://arbiscan.io |
+| Tempo | https://explore.tempo.xyz |
