@@ -57,6 +57,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@TapT_fun',
     title: "TapT — Trade over 300+ Crypto, Stocks, Metals and Forex with 5s-1m time-charts",
     description: "Short charts for crypto, stocks, metals, and FX. Rounds run from 5 seconds to 1 minute.",
   },

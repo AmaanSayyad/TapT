@@ -12,6 +12,7 @@ const PRODUCT: FooterLink[] = [
   { href: '/trade', label: 'Trade AAPL', logo: '/logos/ticker/aapl.svg' },
   { href: '/trade', label: 'Trade NVDA', logo: '/logos/ticker/nvda.svg' },
   { href: '/litepaper', label: 'Litepaper' },
+  { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/referrals', label: 'Referrals' },
   { href: '/#questions', label: 'FAQ' },
@@ -20,7 +21,9 @@ const PRODUCT: FooterLink[] = [
 const PLATFORM: FooterLink[] = [
   { href: '/trade', label: 'Trade desk' },
   { href: '/litepaper', label: 'Litepaper' },
+  { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
   { href: 'https://github.com/AmaanSayyad/TapT', label: 'GitHub', external: true },
+  { href: 'https://x.com/TapT_fun', label: 'X', external: true },
   { href: 'https://robinhoodchain.blockscout.com', label: 'Robinhood explorer', logo: '/partners/robinhood.svg', external: true },
   { href: 'https://basescan.org', label: 'Base', external: true },
   { href: 'https://solscan.io', label: 'Solana', external: true },
@@ -34,7 +37,8 @@ const RESOURCES: FooterLink[] = [
 ];
 
 const COMMUNITY: FooterLink[] = [
-  { href: 'https://t.me/amaan029', label: 'Telegram', external: true },
+  { href: 'https://x.com/TapT_fun', label: 'X', external: true },
+  { href: 'https://t.me/tapt_fun', label: 'Telegram', external: true },
   { href: 'https://github.com/AmaanSayyad/TapT', label: 'GitHub', external: true },
   { href: 'https://robinhoodchain.blockscout.com', label: 'Blockscout', logo: '/partners/robinhood.svg', external: true },
 ];
@@ -115,8 +119,10 @@ export function SiteFooter() {
             <div className="flex flex-wrap items-center gap-2">
               <Chip href="/trade" label="Trade" internal />
               <Chip href="/litepaper" label="Litepaper" internal />
+              <Chip href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" label="Pitch deck" />
               <Chip href="https://github.com/AmaanSayyad/TapT" label="GitHub" />
-              <Chip href="https://t.me/amaan029" label="Telegram" />
+              <Chip href="https://x.com/TapT_fun" label="X" />
+              <Chip href="https://t.me/tapt_fun" label="Telegram" />
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-1 text-[13px] text-[#110e08]/70">Built on</span>

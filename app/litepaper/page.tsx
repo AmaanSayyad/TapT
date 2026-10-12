@@ -324,7 +324,9 @@ export default function LitepaperPage() {
           <h1 className="rh-display text-[clamp(2.4rem,5vw,4.25rem)] text-white">Litepaper</h1>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/trade" className="neon-btn h-9 px-4 text-sm">Launch</Link>
-            <a href="https://t.me/amaan029" target="_blank" rel="noreferrer" className={chip}>Telegram</a>
+            <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className={chip}>Pitch deck</a>
+            <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className={chip}>X</a>
+            <a href="https://t.me/tapt_fun" target="_blank" rel="noreferrer" className={chip}>Telegram</a>
             <a href={PROJECT_GITHUB} target="_blank" rel="noreferrer" className={chip}>GitHub</a>
           </div>
         </div>
@@ -438,8 +440,10 @@ export default function LitepaperPage() {
                     Builder of TapT.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
+                    <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className={chip}>Pitch deck</a>
+                    <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className={chip}>TapT on X</a>
                     <a href="https://github.com/AmaanSayyad/TapT" target="_blank" rel="noreferrer" className={chip}>GitHub</a>
-                    <a href="https://t.me/amaan029" target="_blank" rel="noreferrer" className={chip}>Telegram</a>
+                    <a href="https://t.me/tapt_fun" target="_blank" rel="noreferrer" className={chip}>Telegram</a>
                     <a href="https://linkedin.com/in/amaan-sayyad-/" target="_blank" rel="noreferrer" className={chip}>LinkedIn</a>
                     <a href="https://x.com/amaanbiz" target="_blank" rel="noreferrer" className={chip}>X</a>
                   </div>

@@ -87,6 +87,8 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/trade" className="neon-btn h-12 px-8 text-[0.95rem]">Launch</Link>
             <Link href="/litepaper" className="ghost-btn h-12 px-7 text-[0.95rem]">Litepaper</Link>
+            <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className="ghost-btn h-12 px-7 text-[0.95rem]">Pitch deck</a>
+            <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className="ghost-btn h-12 px-7 text-[0.95rem]">X</a>
           </div>
         </div>
         <div className="relative z-10">

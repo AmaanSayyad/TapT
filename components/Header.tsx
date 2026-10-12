@@ -73,6 +73,22 @@ export function Header() {
               </Link>
             );
           })}
+          <a
+            href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full px-2.5 py-2 text-sm font-medium text-[#9a9590] transition hover:text-white sm:px-3.5"
+          >
+            Deck
+          </a>
+          <a
+            href="https://x.com/TapT_fun"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full px-2.5 py-2 text-sm font-medium text-[#9a9590] transition hover:text-white sm:px-3.5"
+          >
+            X
+          </a>
         </nav>
         </div>
 

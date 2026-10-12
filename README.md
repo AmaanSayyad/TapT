@@ -7,8 +7,10 @@ Binary options trading platform for crypto, stocks, metals, and FX. A round last
 | **Site** | https://tapt.fun |
 | **Trade** | https://tapt.fun/trade |
 | **Litepaper** | https://tapt.fun/litepaper |
+| **Pitch deck** | https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing |
 | **GitHub** | https://github.com/AmaanSayyad/TapT |
-| **Contact** | https://t.me/amaan029 |
+| **X** | https://x.com/TapT_fun |
+| **Contact** | https://t.me/tapt_fun |
 
 ---
 
@@ -364,7 +366,7 @@ The longer aim is a public binary board for stocks, FX, and crypto: the Web2 bin
 
 ## Go to market
 
-The first audience is wallet traders who already use Robinhood Chain, Solana, Base, Arbitrum, or Tempo and want a short round on a stock or a crypto price. Contact for the project is https://t.me/amaan029.
+The first audience is wallet traders who already use Robinhood Chain, Solana, Base, Arbitrum, or Tempo and want a short round on a stock or a crypto price. Contact for the project is https://t.me/tapt_fun.
 
 | # | Segment | Who they are | What they use today | TapT hook | Channel |
 |---|---|---|---|---|---|
@@ -425,6 +427,33 @@ Planning ranges, not current results:
 | The chain | Robinhood Chain is the priority. Stocks and the default wallet are the same network. |
 | The product | Deposits, house balances, and withdrawals already run on the five treasuries. |
 | The gap | Web2 binary apps are restricted in many places. A short on-chain round is still rare. |
+
+---
+
+## Team and company
+
+TapT is a company. It is a long-term product. The hackathon is a public checkpoint, not the end of the desk.
+
+The founder is one person: Amaan Sayyad, a blockchain developer and entrepreneur in Navi Mumbai, India.
+
+| | |
+|---|---|
+| Role | Solo founder |
+| Experience | 50 hackathon wins, 10+ shipped Web3 products, 3 times a founder, 8 companies, 12 times a speaker, 3 grants. Research papers, copyrights, and patents. |
+| Location | Navi Mumbai, India |
+| Email | amaansayyad2001@gmail.com |
+| X | https://x.com/amaanbiz |
+| TapT on X | https://x.com/TapT_fun |
+| GitHub | https://github.com/AmaanSayyad |
+| LinkedIn | https://www.linkedin.com/in/amaan-sayyad- |
+| Portfolio | https://amaan-sayyad-portfolio.vercel.app |
+| Project contact | https://t.me/tapt_fun |
+
+The problem came from using a Web2 binary app. That account is in [Story and inspiration](#story-and-inspiration): a paper-mode win, a real-money loss, and public threads about trial results that did not match real results. The five-year wait was for a public price fast enough to settle a short round.
+
+The same person is building the company because that loss is personal, and the work since then is shipping Web3 products, founding companies, and presenting the work. TapT is the product of that, not a one-week prototype.
+
+Demand and distribution are in [Go to market](#go-to-market). Robinhood Chain is first. Solana, Base, Arbitrum, and Tempo follow as their own communities. A trader can run a demo round before a deposit, and a referral link counts a new wallet.
 
 ---
 
@@ -505,7 +534,7 @@ Production is https://tapt.fun on Vercel. `NEXT_PUBLIC_APP_URL` there is `https:
 
 Admin routes require the session from `DASHBOARD_PASSWORD`. The dashboard is `/dashboard`.
 
-Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https://t.me/amaan029.
+Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https://t.me/tapt_fun.
 
 ---
 
@@ -516,9 +545,12 @@ Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https
 | Site | https://tapt.fun |
 | Trade | https://tapt.fun/trade |
 | Litepaper | https://tapt.fun/litepaper |
+| Pitch deck | https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing |
 | Leaderboard | https://tapt.fun/leaderboard |
 | GitHub | https://github.com/AmaanSayyad/TapT |
-| Contact | https://t.me/amaan029 |
+| X | https://x.com/TapT_fun |
+| Contact | https://t.me/tapt_fun |
+| Founder | Amaan Sayyad, Navi Mumbai |
 | Robinhood Chain | https://robinhoodchain.blockscout.com |
 | Solana | https://solscan.io |
 | Base | https://basescan.org |

@@ -13,6 +13,8 @@ export function getReferralShareTweetText(): string {
     'Stop watching. Start trading.', 
     '',
     'Try it now: 🔥👇',
+    '',
+    'https://x.com/TapT_fun',
     ].join('\n');
 }
 
