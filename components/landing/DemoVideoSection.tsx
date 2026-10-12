@@ -3,8 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const DEMO_EMBED_SRC =
-  'https://www.youtube.com/embed/SU5Eed3pCOw?si=Q-MjKKang33iI26P';
+const DEMO_EMBED_SRC = 'https://www.youtube.com/embed/mG0AfMT4qhY';
 
 export default function DemoVideoSection() {
   return (

@@ -13,6 +13,8 @@ const PRODUCT: FooterLink[] = [
   { href: '/trade', label: 'Trade NVDA', logo: '/logos/ticker/nvda.svg' },
   { href: '/litepaper', label: 'Litepaper' },
   { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
+  { href: 'https://youtu.be/1guno3_jB_Y', label: 'Pitch video', external: true },
+  { href: 'https://youtu.be/mG0AfMT4qhY', label: 'Demo video', external: true },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/referrals', label: 'Referrals' },
   { href: '/#questions', label: 'FAQ' },
@@ -22,6 +24,8 @@ const PLATFORM: FooterLink[] = [
   { href: '/trade', label: 'Trade desk' },
   { href: '/litepaper', label: 'Litepaper' },
   { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
+  { href: 'https://youtu.be/1guno3_jB_Y', label: 'Pitch video', external: true },
+  { href: 'https://youtu.be/mG0AfMT4qhY', label: 'Demo video', external: true },
   { href: 'https://github.com/AmaanSayyad/TapT', label: 'GitHub', external: true },
   { href: 'https://x.com/TapT_fun', label: 'X', external: true },
   { href: 'https://robinhoodchain.blockscout.com', label: 'Robinhood explorer', logo: '/partners/robinhood.svg', external: true },
@@ -120,6 +124,8 @@ export function SiteFooter() {
               <Chip href="/trade" label="Trade" internal />
               <Chip href="/litepaper" label="Litepaper" internal />
               <Chip href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" label="Pitch deck" />
+              <Chip href="https://youtu.be/1guno3_jB_Y" label="Pitch video" />
+              <Chip href="https://youtu.be/mG0AfMT4qhY" label="Demo video" />
               <Chip href="https://github.com/AmaanSayyad/TapT" label="GitHub" />
               <Chip href="https://x.com/TapT_fun" label="X" />
               <Chip href="https://t.me/tapt_fun" label="Telegram" />

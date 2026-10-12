@@ -8,6 +8,8 @@ Binary options trading platform for crypto, stocks, metals, and FX. A round last
 | **Trade** | https://tapt.fun/trade |
 | **Litepaper** | https://tapt.fun/litepaper |
 | **Pitch deck** | https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing |
+| **Pitch video** | https://youtu.be/1guno3_jB_Y |
+| **Demo video** | https://youtu.be/mG0AfMT4qhY |
 | **GitHub** | https://github.com/AmaanSayyad/TapT |
 | **X** | https://x.com/TapT_fun |
 | **Telegram** | https://t.me/tapt_fun |
@@ -444,6 +446,8 @@ The founder is one person: Amaan Sayyad, a blockchain developer and entrepreneur
 | Email | amaansayyad2001@gmail.com |
 | X | https://x.com/amaanbiz |
 | TapT on X | https://x.com/TapT_fun |
+| Pitch video | https://youtu.be/1guno3_jB_Y |
+| Demo video | https://youtu.be/mG0AfMT4qhY |
 | GitHub | https://github.com/AmaanSayyad |
 | LinkedIn | https://www.linkedin.com/in/amaan-sayyad- |
 | Portfolio | https://amaan-sayyad-portfolio.vercel.app |
@@ -546,6 +550,8 @@ Report a vulnerability through `docs/SECURITY_REPORTING.md` or Telegram at https
 | Trade | https://tapt.fun/trade |
 | Litepaper | https://tapt.fun/litepaper |
 | Pitch deck | https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing |
+| Pitch video | https://youtu.be/1guno3_jB_Y |
+| Demo video | https://youtu.be/mG0AfMT4qhY |
 | Leaderboard | https://tapt.fun/leaderboard |
 | GitHub | https://github.com/AmaanSayyad/TapT |
 | X | https://x.com/TapT_fun |

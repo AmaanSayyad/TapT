@@ -325,6 +325,8 @@ export default function LitepaperPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/trade" className="neon-btn h-9 px-4 text-sm">Launch</Link>
             <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className={chip}>Pitch deck</a>
+            <a href="https://youtu.be/1guno3_jB_Y" target="_blank" rel="noreferrer" className={chip}>Pitch video</a>
+            <a href="https://youtu.be/mG0AfMT4qhY" target="_blank" rel="noreferrer" className={chip}>Demo video</a>
             <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className={chip}>X</a>
             <a href="https://t.me/tapt_fun" target="_blank" rel="noreferrer" className={chip}>Telegram</a>
             <a href={PROJECT_GITHUB} target="_blank" rel="noreferrer" className={chip}>GitHub</a>
@@ -441,6 +443,8 @@ export default function LitepaperPage() {
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className={chip}>Pitch deck</a>
+            <a href="https://youtu.be/1guno3_jB_Y" target="_blank" rel="noreferrer" className={chip}>Pitch video</a>
+            <a href="https://youtu.be/mG0AfMT4qhY" target="_blank" rel="noreferrer" className={chip}>Demo video</a>
                     <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className={chip}>TapT on X</a>
                     <a href="https://github.com/AmaanSayyad/TapT" target="_blank" rel="noreferrer" className={chip}>GitHub</a>
                     <a href="https://t.me/tapt_fun" target="_blank" rel="noreferrer" className={chip}>Telegram</a>

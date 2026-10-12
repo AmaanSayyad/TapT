@@ -82,6 +82,22 @@ export function Header() {
             Deck
           </a>
           <a
+            href="https://youtu.be/1guno3_jB_Y"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full px-2.5 py-2 text-sm font-medium text-[#9a9590] transition hover:text-white sm:px-3.5"
+          >
+            Pitch
+          </a>
+          <a
+            href="https://youtu.be/mG0AfMT4qhY"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full px-2.5 py-2 text-sm font-medium text-[#9a9590] transition hover:text-white sm:px-3.5"
+          >
+            Demo
+          </a>
+          <a
             href="https://x.com/TapT_fun"
             target="_blank"
             rel="noreferrer"

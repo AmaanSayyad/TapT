@@ -400,6 +400,8 @@ export default function WaitlistPage() {
                     <div className="footer-meta-item">2026 © All rights reserved</div>
 
                     <div className="footer-link-group">
+                        <a href="https://youtu.be/1guno3_jB_Y" target="_blank" rel="noopener noreferrer" className="footer-meta-item">Pitch</a>
+                        <a href="https://youtu.be/mG0AfMT4qhY" target="_blank" rel="noopener noreferrer" className="footer-meta-item">Demo</a>
                         <a href="https://x.com/TapT_fun" target="_blank" rel="noopener noreferrer" className="footer-meta-item">X</a>
                         <a href="https://t.me/tapt_fun" target="_blank" rel="noopener noreferrer" className="footer-meta-item">Telegram</a>
                     </div>
