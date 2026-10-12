@@ -81,15 +81,9 @@ export default function HomePage() {
           <h1 className="mb-5 max-w-3xl text-[clamp(1.45rem,3.4vw,2.15rem)] font-medium leading-snug text-white">
             Predict the next tick.
           </h1>
-          <p className="mb-8 max-w-xl text-base leading-relaxed text-white/70">
+          <p className="max-w-xl text-base leading-relaxed text-white/70">
             Short charts across crypto, stocks, metals, and FX. Connect a wallet, fund the house balance, and trade the move.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/trade" className="neon-btn h-12 px-8 text-[0.95rem]">Launch</Link>
-            <Link href="/litepaper" className="ghost-btn h-12 px-7 text-[0.95rem]">Litepaper</Link>
-            <a href="https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing" target="_blank" rel="noreferrer" className="ghost-btn h-12 px-7 text-[0.95rem]">Pitch deck</a>
-            <a href="https://x.com/TapT_fun" target="_blank" rel="noreferrer" className="ghost-btn h-12 px-7 text-[0.95rem]">X</a>
-          </div>
         </div>
         <div className="relative z-10">
           <LivePriceLine />
