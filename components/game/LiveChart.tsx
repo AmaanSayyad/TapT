@@ -211,9 +211,15 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   const [cellBets, setCellBets] = useState<Map<string, CellBet>>(new Map());
 
   // --- Draw mode state ---
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
-  const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
+  // Drag geometry lives in a ref and is painted on the preview node.
+  // setState on every move re-rendered this whole chart and the box lagged behind the cursor.
+  const drawPreviewRef = useRef<HTMLDivElement>(null);
+  const drawDragRef = useRef<{
+    drawing: boolean;
+    start: { x: number; y: number } | null;
+    current: { x: number; y: number } | null;
+  }>({ drawing: false, start: null, current: null });
+  const drawBoxRef = useRef<DOMRect | null>(null);
 
   interface PendingDrawBox {
     x: number;
@@ -373,19 +379,26 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     setWatchlist((prev) => prev.includes(asset) ? prev.filter((a) => a !== asset) : [...prev, asset]);
   };
 
-  // Auto-remove bet results after 3 seconds
+  // Remove settled cards after the fade finishes. The fade itself is CSS, so it
+  // does not wait on chart re-renders.
+  const resultTimersRef = useRef<Map<string, number>>(new Map());
   useEffect(() => {
-    if (betResults.length === 0) return;
-    const interval = setInterval(() => {
-      const nowTime = Date.now();
-      setBetResults(prev => {
-        const filtered = prev.filter((r: BetResult) => nowTime - r.timestamp < 3000);
-        return filtered.length === prev.length ? prev : filtered;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [betResults.length]);
+    betResults.forEach((result) => {
+      if (resultTimersRef.current.has(result.id)) return;
+      const timer = window.setTimeout(() => {
+        resultTimersRef.current.delete(result.id);
+        setBetResults((prev) => prev.filter((item) => item.id !== result.id));
+      }, 2600);
+      resultTimersRef.current.set(result.id, timer);
+    });
+  }, [betResults]);
+  useEffect(() => {
+    const timers = resultTimersRef.current;
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   // Hide loading when price data arrives
   useEffect(() => {
@@ -555,48 +568,69 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
 
   // --- Draw mode helpers ---
-  const getRelativePos = (e: React.MouseEvent): { x: number; y: number } => {
-    if (!containerRef.current) return { x: 0, y: 0 };
-    const rect = containerRef.current.getBoundingClientRect();
+  const paintDrawPreview = () => {
+    const el = drawPreviewRef.current;
+    if (!el) return;
+    const { drawing, start, current } = drawDragRef.current;
+    if (!drawing || !start || !current) {
+      el.style.opacity = '0';
+      return;
+    }
+    el.style.opacity = '1';
+    el.style.left = `${Math.min(start.x, current.x)}px`;
+    el.style.top = `${Math.min(start.y, current.y)}px`;
+    el.style.width = `${Math.abs(current.x - start.x)}px`;
+    el.style.height = `${Math.abs(current.y - start.y)}px`;
+  };
+
+  const getRelativePos = (e: { clientX: number; clientY: number }): { x: number; y: number } => {
+    const rect = drawBoxRef.current ?? containerRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const handleDrawMouseDown = (e: React.MouseEvent) => {
+  const handleDrawPointerDown = (e: React.PointerEvent) => {
     if (gameMode !== 'draw' || !scales || e.button !== 0) return;
+    drawBoxRef.current = containerRef.current?.getBoundingClientRect() ?? null;
     const pos = getRelativePos(e);
     // Require drawing to start on/after the current price tip.
     if (pos.x <= scales.tipX) return;
 
+    e.currentTarget.setPointerCapture(e.pointerId);
     setPendingBox(null);
-    setDrawStart(pos);
-    setDrawCurrent(pos);
-    setIsDrawing(true);
+    drawDragRef.current = { drawing: true, start: pos, current: pos };
+    paintDrawPreview();
     e.preventDefault();
   };
 
-  const handleDrawMouseMove = (e: React.MouseEvent) => {
+  const handleDrawPointerMove = (e: React.PointerEvent) => {
     if (gameMode !== 'draw' || !scales) return;
-    if (!isDrawing || !drawStart) return;
+    const drag = drawDragRef.current;
+    if (!drag.drawing || !drag.start) return;
 
     const pos = getRelativePos(e);
 
     const maxW = pixelsPerSecond * 20;
     const maxH = dimensions.height * 0.20;
 
-    const clampedX = Math.max(scales.tipX + 2, Math.min(pos.x, drawStart.x + maxW));
-    const clampedY = Math.max(drawStart.y - maxH, Math.min(pos.y, drawStart.y + maxH));
-    setDrawCurrent({ x: clampedX, y: clampedY });
+    const clampedX = Math.max(scales.tipX + 2, Math.min(pos.x, drag.start.x + maxW));
+    const clampedY = Math.max(drag.start.y - maxH, Math.min(pos.y, drag.start.y + maxH));
+    drag.current = { x: clampedX, y: clampedY };
+    paintDrawPreview();
+  };
+
+  const clearDrawDrag = () => {
+    drawDragRef.current = { drawing: false, start: null, current: null };
+    drawBoxRef.current = null;
+    paintDrawPreview();
   };
 
   const finalizeDrawBox = () => {
+    const { start: drawStart, current: drawCurrent } = drawDragRef.current;
     if (!drawStart || !drawCurrent || !scales || dimensions.height === 0) {
-      setIsDrawing(false);
-      setDrawStart(null);
-      setDrawCurrent(null);
+      clearDrawDrag();
       return;
     }
-
-    setIsDrawing(false);
 
     const minX = Math.min(drawStart.x, drawCurrent.x);
     const maxX = Math.max(drawStart.x, drawCurrent.x);
@@ -609,8 +643,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     const maxBoxWidthPx = pixelsPerSecond * 20;
 
     if (maxX - minX < minBoxWidthPx || maxY - minY < minBoxHeightPx) {
-      setDrawStart(null);
-      setDrawCurrent(null);
+      clearDrawDrag();
       return;
     }
 
@@ -646,6 +679,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
       multiplier = Math.max(1.02, Math.min(rawMult, 15));
     }
 
+    clearDrawDrag();
     setPendingBox({
       x: minX,
       y: minY,
@@ -657,17 +691,10 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
       multiplier,
       startTime,
     });
-
-    setDrawStart(null);
-    setDrawCurrent(null);
   };
 
-  const handleDrawMouseUp = () => {
-    if (isDrawing) finalizeDrawBox();
-  };
-
-  const handleDrawMouseLeave = () => {
-    if (isDrawing) finalizeDrawBox();
+  const handleDrawPointerUp = () => {
+    if (drawDragRef.current.drawing) finalizeDrawBox();
   };
 
   const handlePlaceDrawBet = async () => {
@@ -1217,32 +1244,22 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
             if (cell.status === 'won') {
               return (
-                <div key={cell.id} className="pointer-events-none">
+                <div key={cell.id} className="tapt-cell-win pointer-events-none">
                   <div
-                    className="absolute rounded-sm animate-ping"
-                    style={{
-                      left: cell.x - 5,
-                      top: cell.y - 5,
-                      width: cell.width + 10,
-                      height: cell.height + 10,
-                      backgroundColor: '#ccff00',
-                      opacity: 0.5
-                    }}
-                  />
-                  <div
-                    className="absolute rounded-sm flex items-center justify-center"
+                    className="absolute rounded-sm"
                     style={{
                       left: cell.x,
                       top: cell.y,
                       width: cell.width,
                       height: cell.height,
-                      backgroundColor: 'rgba(204, 255, 0, 0.9)',
-                      border: '2px solid #ffffff',
-                      boxShadow: '0 0 20px #ccff00'
+                      backgroundColor: 'rgba(34, 197, 94, 0.42)',
+                      border: '2px solid rgba(74, 222, 128, 0.9)',
+                      boxShadow: '0 0 18px rgba(34, 197, 94, 0.35)',
+                      transition: 'background-color 480ms ease, border-color 480ms ease, box-shadow 480ms ease',
                     }}
                   >
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-mono font-bold text-[#110e08]">
+                    <div className="flex h-full flex-col items-center justify-center">
+                      <span className="text-[10px] font-mono font-bold text-white">
                         x{cell.multiplier}
                       </span>
                     </div>
@@ -1355,35 +1372,33 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
           {/* Mouse capture overlay (prevents placing new bets while confirming) */}
           <div
             className="absolute inset-0 z-30"
-            style={{ cursor: 'crosshair', pointerEvents: pendingBox ? 'none' : 'auto' }}
-            onMouseDown={handleDrawMouseDown}
-            onMouseMove={handleDrawMouseMove}
-            onMouseUp={handleDrawMouseUp}
-            onMouseLeave={handleDrawMouseLeave}
+            style={{ cursor: 'crosshair', pointerEvents: pendingBox ? 'none' : 'auto', touchAction: 'none' }}
+            onPointerDown={handleDrawPointerDown}
+            onPointerMove={handleDrawPointerMove}
+            onPointerUp={handleDrawPointerUp}
+            onPointerCancel={handleDrawPointerUp}
           />
 
-          {/* Preview while dragging */}
-          {isDrawing && drawStart && drawCurrent && (
-            <div
-              className="absolute z-25 pointer-events-none"
-              style={{
-                left: Math.min(drawStart.x, drawCurrent.x),
-                top: Math.min(drawStart.y, drawCurrent.y),
-                width: Math.abs(drawCurrent.x - drawStart.x),
-                height: Math.abs(drawCurrent.y - drawStart.y),
-                border: '2px dashed rgba(204,255,0,0.9)',
-                backgroundColor: 'rgba(204,255,0,0.08)',
-                borderRadius: 4,
-              }}
-            />
-          )}
+          {/* Preview while dragging. Geometry is written on the node so the chart does not re-render. */}
+          <div
+            ref={drawPreviewRef}
+            className="absolute pointer-events-none opacity-0"
+            style={{
+              zIndex: 45,
+              border: '2px dashed rgba(204,255,0,0.95)',
+              backgroundColor: 'rgba(204,255,0,0.16)',
+              borderRadius: 4,
+              boxShadow: '0 0 0 1px rgba(204,255,0,0.4)',
+            }}
+          />
 
           {/* Pending placement preview + confirm panel */}
-          {pendingBox && !isDrawing && (
+          {pendingBox && (
             <>
               <div
-                className="absolute z-25 pointer-events-none"
+                className="absolute pointer-events-none"
                 style={{
+                  zIndex: 32,
                   left: pendingBox.x,
                   top: pendingBox.y,
                   width: pendingBox.width,
@@ -1483,9 +1498,12 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                       width={width}
                       height={height}
                       rx={4}
-                      fill={fill}
-                      stroke={stroke}
                       strokeWidth={2}
+                      style={{
+                        fill,
+                        stroke,
+                        transition: 'fill 420ms ease, stroke 420ms ease',
+                      }}
                     />
                     <text
                       x={clampedStartX + 6}
@@ -1552,7 +1570,8 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                   width={expirationX - nowX}
                   height={Math.abs(strikeY - scales.yScale(currentPrice))}
                   fill={color}
-                  fillOpacity="0.05"
+                  fillOpacity="0.12"
+                  style={{ transition: 'fill 420ms ease, fill-opacity 420ms ease' }}
                 />
               )}
 
@@ -1978,54 +1997,53 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
       )}
 
       <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden">
+        {betResults.map((result) => (
+          <div
+            key={`wash-${result.id}`}
+            className={`tapt-result-wash absolute inset-0 ${result.won ? 'bg-emerald-400/20' : 'bg-red-500/20'}`}
+          />
+        ))}
         {betResults.map((result) => {
-          const age = Date.now() - result.timestamp;
-          const opacity = Math.max(0, 1 - age / 3000);
-          const translateY = -age / 20;
-
           return (
             <div
               key={result.id}
-              className="absolute"
+              className="tapt-result-card absolute"
               style={{
                 left: Math.min(Math.max(result.x, 80), dimensions.width - 140),
-                top: Math.min(Math.max(result.y + translateY, 40), dimensions.height - 120),
-                opacity,
-                transform: `translateY(${translateY}px)`,
+                top: Math.min(Math.max(result.y, 40), dimensions.height - 120),
               }}
             >
               <div className={`
-                relative px-5 py-3 rounded-2xl backdrop-blur-xl
+                relative rounded-2xl px-5 py-3
                 ${result.won
-                  ? 'bg-gradient-to-br from-green-500/30 via-emerald-500/20 to-green-600/30 border border-green-400/60 shadow-[0_0_30px_rgba(34,197,94,0.4)]'
-                  : 'bg-gradient-to-br from-red-500/30 via-rose-500/20 to-red-600/30 border border-red-400/60 shadow-[0_0_30px_rgba(239,68,68,0.4)]'
+                  ? 'border border-emerald-300/70 bg-emerald-950/80 shadow-[0_0_28px_rgba(52,211,153,0.28)]'
+                  : 'border border-red-300/70 bg-red-950/80 shadow-[0_0_28px_rgba(248,113,113,0.28)]'
                 }
               `}>
-                <div className={`absolute -inset-1 rounded-2xl blur-sm ${result.won ? 'bg-green-400/20' : 'bg-red-400/20'} animate-pulse`} />
                 <div className="relative flex items-center gap-3">
                   <div className={`
-                    w-10 h-10 rounded-xl flex items-center justify-center text-xl
+                    flex h-10 w-10 items-center justify-center rounded-xl text-xl
                     ${result.won
-                      ? 'bg-green-400/30 text-green-300'
-                      : 'bg-red-400/30 text-red-300'
+                      ? 'bg-emerald-400/25 text-emerald-200'
+                      : 'bg-red-400/25 text-red-200'
                     }
                   `}>
                     {result.won ? '✓' : '✕'}
                   </div>
                   <div>
-                    <p className={`text-sm font-black tracking-wide ${result.won ? 'text-green-300' : 'text-red-300'}`}>
+                    <p className={`text-sm font-black tracking-wide ${result.won ? 'text-emerald-200' : 'text-red-200'}`}>
                       {result.won ? 'WIN!' : 'LOST'}
                     </p>
-                    <p className={`text-lg font-bold ${result.won ? 'text-green-100' : 'text-red-100'}`}>
+                    <p className={`text-lg font-bold ${result.won ? 'text-emerald-50' : 'text-red-50'}`}>
                       {result.won
                         ? `+${result.payout.toFixed(4)}`
                         : `-${result.amount.toFixed(4)}`
                       }
-                      <span className="text-xs ml-1 opacity-70">{currencySymbol}</span>
+                      <span className="ml-1 text-xs opacity-70">{currencySymbol}</span>
                     </p>
                   </div>
                   {result.won && (
-                    <div className="px-2 py-0.5 rounded-lg bg-green-400/20 text-green-200 text-xs font-bold">
+                    <div className="rounded-lg bg-emerald-400/20 px-2 py-0.5 text-xs font-bold text-emerald-100">
                       x{result.multiplier}
                     </div>
                   )}

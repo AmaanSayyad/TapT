@@ -61,6 +61,7 @@ export function Header() {
     { href: 'https://youtu.be/mG0AfMT4qhY', label: 'Demo', external: true },
     { href: 'https://x.com/TapT_fun', label: 'X', external: true },
   ];
+  const menuNav = nav.filter((link) => link.label !== 'Deck' && link.label !== 'Pitch' && link.label !== 'X');
 
   return (
     <header className="sticky top-0 z-[100] w-full max-w-full shrink-0 bg-black pt-[env(safe-area-inset-top)]">
@@ -116,30 +117,30 @@ export function Header() {
               {accountType === 'demo' ? 'Exit demo' : 'Demo'}
             </button>
           )}
+          <WalletConnect />
+          {pathname !== '/trade' && (
+            <Link href="/trade" className="neon-btn inline-flex h-9 shrink-0 px-3 text-sm sm:h-10 sm:px-4">
+              Launch
+            </Link>
+          )}
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ccff00] bg-[#141414] text-[#ccff00] lg:hidden"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#ccff00] bg-[#141414] text-[#ccff00] lg:hidden"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((open) => !open)}
           >
-            <span className="flex w-5 flex-col gap-1.5" aria-hidden>
-              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
+            <span className="flex w-3.5 flex-col gap-1" aria-hidden>
+              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? 'translate-y-[6px] rotate-45' : ''}`} />
               <span className={`block h-0.5 w-full rounded-full bg-[#ccff00] transition ${menuOpen ? 'opacity-0' : ''}`} />
-              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
+              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? '-translate-y-[6px] -rotate-45' : ''}`} />
             </span>
           </button>
-          <WalletConnect />
-          {onHome && (
-            <Link href="/trade" className="neon-btn !hidden h-9 shrink-0 px-3 text-sm min-[420px]:!inline-flex sm:h-10 sm:px-4">
-              Launch
-            </Link>
-          )}
         </div>
       </div>
       {menuOpen && (
         <nav className="absolute inset-x-0 top-full z-[120] max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] overflow-y-auto overscroll-contain border-t border-[#2a2a2a] bg-black px-3 py-2 lg:hidden">
-          {nav.map((link) => {
+          {menuNav.map((link) => {
             const className = 'block rounded-xl px-3 py-3 text-[15px] text-white';
             if ('external' in link) {
               return (

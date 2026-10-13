@@ -162,7 +162,10 @@ input[type="reset"]:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track {
+  .ticker-track,
+  .tapt-result-card,
+  .tapt-result-wash,
+  .tapt-cell-win {
     animation: none;
   }
 }
@@ -182,4 +185,36 @@ input[type="reset"]:disabled {
   color: #fff;
   font-weight: 500;
   border-radius: 9999px;
+}
+
+@keyframes tapt-result-card {
+  0% { opacity: 0; transform: translate3d(0, 10px, 0); }
+  16% { opacity: 1; transform: translate3d(0, 0, 0); }
+  68% { opacity: 1; transform: translate3d(0, -10px, 0); }
+  100% { opacity: 0; transform: translate3d(0, -26px, 0); }
+}
+
+@keyframes tapt-result-wash {
+  0% { opacity: 0; }
+  14% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes tapt-cell-win {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tapt-result-card {
+  animation: tapt-result-card 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.tapt-result-wash {
+  animation: tapt-result-wash 2.6s ease-out both;
+  will-change: opacity;
+}
+
+.tapt-cell-win {
+  animation: tapt-cell-win 480ms ease both;
 }
