@@ -124,7 +124,15 @@ const ASSET_CONFIG: Record<AssetType, { name: string; symbol: string; pair: stri
 
 
 // Logos ship with the app. Remote logo hosts are slow and were blocking the mark.
-const AssetIcon = React.memo(function AssetIcon({ src, asset }: { src: string; asset: string }) {
+const AssetIcon = React.memo(function AssetIcon({
+  src,
+  asset,
+  className = 'h-full w-full object-contain',
+}: {
+  src: string;
+  asset: string;
+  className?: string;
+}) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -144,7 +152,7 @@ const AssetIcon = React.memo(function AssetIcon({ src, asset }: { src: string; a
       src={src}
       alt=""
       decoding="async"
-      className="h-full w-full object-contain"
+      className={className}
       onError={() => setFailed(true)}
     />
   );

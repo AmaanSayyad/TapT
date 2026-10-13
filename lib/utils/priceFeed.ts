@@ -176,7 +176,7 @@ export class PythPriceFeed {
           expo: -8
         };
       }
-      throw error;
+      throw new Error('Price unavailable');
     }
   }
 
