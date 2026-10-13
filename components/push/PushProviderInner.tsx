@@ -97,7 +97,7 @@ export default function PushProviderInner() {
             app={{
                 title: 'TapT',
                 description: 'Binary Options on Push Chain',
-                logoUrl: 'https://tapt.fun/brand/tapt-mark.jpg',
+                logoUrl: 'https://tapt.fun/brand/tapt-mark.png',
                 url: 'https://tapt.fun',
             } as any}
             themeMode="dark"

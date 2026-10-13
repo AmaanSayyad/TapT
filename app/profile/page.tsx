@@ -242,7 +242,7 @@ export default function ProfilePage() {
                             <h2 className="text-base text-white">Settled rounds</h2>
                             <Link href="/leaderboard" className="text-sm text-[#9a9590] hover:text-white">Leaderboard</Link>
                         </div>
-                        {isLoadingTrades ? (
+                        {isLoadingTrades && recentTrades.length === 0 ? (
                             <p className="px-5 py-16 text-center text-sm text-[#9a9590]">Loading rounds.</p>
                         ) : recentTrades.length === 0 ? (
                             <div className="px-5 py-12 text-center">

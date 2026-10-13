@@ -100,7 +100,7 @@ export const MiniHistory: React.FC = () => {
             </AnimatePresence>
 
             {/* Trigger Buttons Row */}
-            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
+            <div className="flex max-w-full flex-wrap items-center justify-end gap-1.5 pb-1 sm:flex-nowrap sm:gap-2">
                 {/* Indicators Toggle */}
                 <button
                     onClick={() => {

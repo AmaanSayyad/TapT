@@ -157,8 +157,7 @@ export class PythPriceFeed {
         timestamp: Date.now() / 1000,
         expo: -8
       };
-    } catch (error) {
-      console.error(`Error fetching ${this.asset} price:`, error);
+    } catch {
       if (this.lastPrice !== null) {
         return {
           price: this.lastPrice,
@@ -267,9 +266,13 @@ export class PythPriceFeed {
   }
 }
 
+let stopMultiPythPriceFeed: (() => void) | null = null;
+
 export const startMultiPythPriceFeed = (
   callback: (prices: Record<string, number>) => void
 ): (() => void) => {
+  stopMultiPythPriceFeed?.();
+
   let isActive = true;
   /** Prevents overlapping Hermes batch calls (stacked requests → timeouts / canceled rows on mobile). */
   let inFlight = false;
@@ -290,12 +293,15 @@ export const startMultiPythPriceFeed = (
   void run();
   const intervalId = setInterval(() => {
     void run();
-  }, 1000);
+  }, 2000);
 
-  return () => {
+  const stop = () => {
     isActive = false;
     clearInterval(intervalId);
+    if (stopMultiPythPriceFeed === stop) stopMultiPythPriceFeed = null;
   };
+  stopMultiPythPriceFeed = stop;
+  return stop;
 };
 
 export const startPythPriceFeed = (

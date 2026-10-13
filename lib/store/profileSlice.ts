@@ -13,6 +13,30 @@ export interface ProfileState {
     fetchRecentTrades: (address: string) => Promise<void>;
 }
 
+const TRADES_CACHE_PREFIX = 'tapt_settled_rounds_v1:';
+const tradesInflight = new Map<string, Promise<void>>();
+
+function readCachedTrades(address: string): unknown[] | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = sessionStorage.getItem(TRADES_CACHE_PREFIX + address);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as unknown;
+        return Array.isArray(parsed) ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeCachedTrades(address: string, bets: unknown[]) {
+    if (typeof window === 'undefined') return;
+    try {
+        sessionStorage.setItem(TRADES_CACHE_PREFIX + address, JSON.stringify(bets));
+    } catch {
+        // Private mode or a full cache should not block the list.
+    }
+}
+
 export const createProfileSlice: StateCreator<ProfileState> = (set, get) => ({
     username: (typeof window !== 'undefined' && localStorage.getItem('bynomo_username')) || null,
     accessCode: (typeof window !== 'undefined' && localStorage.getItem('bynomo_access_code')) || null,
@@ -79,26 +103,49 @@ export const createProfileSlice: StateCreator<ProfileState> = (set, get) => ({
 
     fetchRecentTrades: async (address: string) => {
         if (!address) return;
-        set({ isLoadingTrades: true });
-        try {
-            // bet_history is not readable with the browser anon key after RLS hardening
-            // (see supabase/migrations/004_enable_rls.sql). Use the service-backed API instead.
-            const res = await fetch(
-                `/api/bets/history?wallet=${encodeURIComponent(address)}&limit=10`,
-                { headers: { ...balanceMutationHeaders() } },
-            );
-            if (!res.ok) {
-                console.warn('fetchRecentTrades: API error', res.status);
-                set({ recentTrades: [] });
-                return;
+        const pending = tradesInflight.get(address);
+        if (pending) return pending;
+
+        const run = (async () => {
+            const cached = readCachedTrades(address);
+            // Keep the last list on screen. The spinner is only for a first load.
+            if (cached) set({ recentTrades: cached, isLoadingTrades: false });
+            else set({ recentTrades: [], isLoadingTrades: true });
+
+            const controller = new AbortController();
+            const timer = window.setTimeout(() => controller.abort(), 8000);
+            try {
+                // bet_history is not readable with the browser anon key after RLS hardening
+                // (see supabase/migrations/004_enable_rls.sql). Use the service-backed API instead.
+                const res = await fetch(
+                    `/api/bets/history?wallet=${encodeURIComponent(address)}&limit=10`,
+                    { headers: { ...balanceMutationHeaders() }, signal: controller.signal },
+                );
+                if (!res.ok) {
+                    console.warn('fetchRecentTrades: API error', res.status);
+                    if (!cached) set({ recentTrades: [] });
+                    return;
+                }
+                const json = (await res.json()) as { bets?: unknown[] };
+                const bets = Array.isArray(json.bets) ? json.bets : [];
+                set({ recentTrades: bets });
+                writeCachedTrades(address, bets);
+            } catch (error) {
+                if (!cached) {
+                    console.error('Error fetching recent trades:', error);
+                    set({ recentTrades: [] });
+                }
+            } finally {
+                window.clearTimeout(timer);
+                set({ isLoadingTrades: false });
             }
-            const json = (await res.json()) as { bets?: unknown[] };
-            set({ recentTrades: Array.isArray(json.bets) ? json.bets : [] });
-        } catch (error) {
-            console.error('Error fetching recent trades:', error);
-            set({ recentTrades: [] });
+        })();
+
+        tradesInflight.set(address, run);
+        try {
+            await run;
         } finally {
-            set({ isLoadingTrades: false });
+            tradesInflight.delete(address);
         }
     },
 

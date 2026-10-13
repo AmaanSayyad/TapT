@@ -39,7 +39,6 @@ export const GameBoard: React.FC = () => {
     selectedAsset,
     updatePrice,
     placeBetFromHouseBalance,
-    isPlacingBet,
     isBlitzActive,
     blitzEndTime,
     nextBlitzTime,
@@ -642,7 +641,7 @@ export const GameBoard: React.FC = () => {
       </div>
 
       {/* Blitz Round Indicator - Top Right */}
-      <div className="absolute top-4 sm:top-6 right-3 sm:right-6 z-30 pointer-events-auto">
+      <div className="absolute top-3 right-2 z-30 pointer-events-auto sm:top-6 sm:right-6">
         <div className={`rounded-2xl border px-3 py-2 ${isBlitzActive ? 'border-[#ccff00] bg-[#141414]' : 'border-[#2a2a2a] bg-[#0c0c0c]/90'}`}>
           <div>
             {isBlitzActive ? (
@@ -878,7 +877,7 @@ export const GameBoard: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 pt-1" data-tour="direction-buttons">
                       <button
                         onClick={() => handleBynomoBet('UP')}
-                        disabled={!isWalletConnected || isPlacingBet || isUnauthorized}
+                        disabled={!isWalletConnected || isUnauthorized}
                         className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-[#ccff00] py-3 text-[#110e08] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-80 sm:py-4"
                       >
                         <span className="text-lg leading-none">▲</span>
@@ -887,7 +886,7 @@ export const GameBoard: React.FC = () => {
 
                       <button
                         onClick={() => handleBynomoBet('DOWN')}
-                        disabled={!isWalletConnected || isPlacingBet || isUnauthorized}
+                        disabled={!isWalletConnected || isUnauthorized}
                         className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-[#ff5c5c]/40 bg-[#141414] py-3 text-[#ff5c5c] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-80 sm:py-4"
                       >
                         <span className="text-lg leading-none">▼</span>

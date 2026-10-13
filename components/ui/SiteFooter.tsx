@@ -9,42 +9,31 @@ type FooterLink = {
 
 const PRODUCT: FooterLink[] = [
   { href: '/trade', label: 'Trade' },
-  { href: '/trade', label: 'Trade AAPL', logo: '/logos/ticker/aapl.svg' },
-  { href: '/trade', label: 'Trade NVDA', logo: '/logos/ticker/nvda.svg' },
-  { href: '/litepaper', label: 'Litepaper' },
-  { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
-  { href: 'https://youtu.be/1guno3_jB_Y', label: 'Pitch video', external: true },
-  { href: 'https://youtu.be/mG0AfMT4qhY', label: 'Demo video', external: true },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/referrals', label: 'Referrals' },
   { href: '/#questions', label: 'FAQ' },
 ];
 
 const PLATFORM: FooterLink[] = [
-  { href: '/trade', label: 'Trade desk' },
   { href: '/litepaper', label: 'Litepaper' },
   { href: 'https://docs.google.com/presentation/d/1fU8I2s4G7NfGJGbwYn-6qHP0JO45BBTLO-1hhKIBdzQ/edit?usp=sharing', label: 'Pitch deck', external: true },
   { href: 'https://youtu.be/1guno3_jB_Y', label: 'Pitch video', external: true },
   { href: 'https://youtu.be/mG0AfMT4qhY', label: 'Demo video', external: true },
   { href: 'https://github.com/AmaanSayyad/TapT', label: 'GitHub', external: true },
-  { href: 'https://x.com/TapT_fun', label: 'X', external: true },
-  { href: 'https://robinhoodchain.blockscout.com', label: 'Robinhood explorer', logo: '/partners/robinhood.svg', external: true },
-  { href: 'https://basescan.org', label: 'Base', external: true },
-  { href: 'https://solscan.io', label: 'Solana', external: true },
 ];
 
 const RESOURCES: FooterLink[] = [
   { href: 'https://docs.robinhood.com/chain/', label: 'Chain docs', logo: '/partners/robinhood.svg', external: true },
   { href: 'https://docs.arbitrum.io/', label: 'Arbitrum docs', logo: '/partners/arbitrum.png', external: true },
   { href: 'https://docs.base.org/', label: 'Base docs', logo: '/logos/chains/base.png', external: true },
-  { href: 'https://robinhood.com/us/en/chain/', label: 'Robinhood Chain', logo: '/partners/robinhood.svg', external: true },
+  { href: 'https://robinhoodchain.blockscout.com', label: 'Robinhood explorer', logo: '/partners/robinhood.svg', external: true },
+  { href: 'https://basescan.org', label: 'Base', external: true },
+  { href: 'https://solscan.io', label: 'Solana', external: true },
 ];
 
 const COMMUNITY: FooterLink[] = [
   { href: 'https://x.com/TapT_fun', label: 'X', external: true },
   { href: 'https://t.me/tapt_fun', label: 'Telegram', external: true },
-  { href: 'https://github.com/AmaanSayyad/TapT', label: 'GitHub', external: true },
-  { href: 'https://robinhoodchain.blockscout.com', label: 'Blockscout', logo: '/partners/robinhood.svg', external: true },
 ];
 
 function LinkMark({ logo }: { logo?: string }) {
@@ -115,7 +104,7 @@ export function SiteFooter() {
       <div className="rh-container pb-12 pt-10 sm:pb-14 sm:pt-12">
         <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/brand/tapt-mark.jpg" alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
+            <img src="/brand/tapt-mark.png" alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
             <span className="text-[17px] font-medium">TapT.fun</span>
           </Link>
 

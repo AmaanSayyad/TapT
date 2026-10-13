@@ -19,7 +19,6 @@ function ReferralSyncInner() {
         if (isConnected && address) {
             fetchReferralInfo(address);
             useStore.getState().fetchProfile(address);
-            useStore.getState().fetchRecentTrades(address);
         }
     }, [isConnected, address, fetchReferralInfo]);
 

@@ -245,12 +245,13 @@ export function MusicPlayer() {
       audio.src = desiredSrc;
     }
 
-    const defaultY = Math.max(8, window.innerHeight - 180);
+    const narrow = window.innerWidth < 768;
+    const defaultY = Math.max(8, window.innerHeight - (narrow ? 72 : 180));
     const nextPos = clampPos(
-      typeof saved.x === "number" ? saved.x : 20,
-      typeof saved.y === "number" ? saved.y : defaultY,
-      300,
-      160
+      narrow ? 12 : (typeof saved.x === "number" ? saved.x : 20),
+      narrow ? defaultY : (typeof saved.y === "number" ? saved.y : defaultY),
+      narrow ? Math.min(280, window.innerWidth - 24) : 300,
+      narrow ? 56 : 160
     );
     setPos(nextPos);
 

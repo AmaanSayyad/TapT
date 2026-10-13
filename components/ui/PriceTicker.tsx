@@ -101,7 +101,9 @@ export const PriceTicker: React.FC = () => {
 
   return (
     <div className="relative w-full shrink-0 overflow-hidden border-b border-white/5 bg-black">
-      <div className="ticker-track py-2.5">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-black to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-black to-transparent" />
+      <div className="ticker-track py-2">
         {loop.map((item, index) => {
           const price = assetPrices[item.key];
           const selected = selectedAsset === item.key;

@@ -2,7 +2,7 @@
 
 The live mark is option 5, the lime tile with the black italic T and the black strike.
 
-Installed as `public/brand/tapt-mark.jpg`. The header, footer, litepaper, favicon, and social image use that file.
+Installed as `public/brand/tapt-mark.png`. The header, footer, litepaper, favicon, and social image use that file.
 
 | # | File | Idea |
 |---|------|------|

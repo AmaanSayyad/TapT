@@ -67,7 +67,7 @@ const flow = 'flex flex-col items-stretch gap-2 py-2 sm:flex-row sm:flex-wrap sm
 function ChainLogoDiagram({ balance }: { balance?: boolean }) {
   return (
     <div className={flow}>
-      <DiagramNode src="/brand/tapt-mark.jpg" label="TapT" />
+      <DiagramNode src="/brand/tapt-mark.png" label="TapT" />
       <Arrow />
       <div className="flex w-full flex-col gap-2 sm:w-auto">
         {chainMarks.map((chain) => (
@@ -177,7 +177,7 @@ function PriceDiagram() {
         </div>
       ))}
       <Arrow />
-      <DiagramNode src="/brand/tapt-mark.jpg" label="Chart and settlement" />
+      <DiagramNode src="/brand/tapt-mark.png" label="Chart and settlement" />
     </div>
   );
 }
@@ -188,7 +188,7 @@ function ArchitectureDiagram() {
       <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-center">
         <DiagramNode label="Wallet" />
         <Arrow />
-        <DiagramNode src="/brand/tapt-mark.jpg" label="TapT client" />
+        <DiagramNode src="/brand/tapt-mark.png" label="TapT client" />
         <Arrow />
         <DiagramNode label="Trade and balance routes" />
       </div>

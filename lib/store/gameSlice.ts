@@ -296,6 +296,7 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
     metadata?: { priceTop?: number; priceBottom?: number; startTime?: number; endTime?: number; txHash?: string }
   ) => {
     const { targetCells, currentPrice, addActiveBet, gameMode, timeframeSeconds, selectedAsset } = get();
+    let releaseStake = () => {};
 
     try {
       // Parse amount for validation
@@ -411,7 +412,15 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
         throw new Error(`No house balance for this wallet in ${currency}. Deposit from the Wallet tab first.`);
       }
 
-      set({ isPlacingBet: true, error: null });
+      // Take the stake locally first so another tap can place the next round
+      // without waiting on this request. The server row lock still rejects an overdraft.
+      (get() as any).updateBalance?.(betAmount, 'subtract');
+      let stakeHeld = true;
+      releaseStake = () => {
+        if (!stakeHeld) return;
+        stakeHeld = false;
+        (get() as any).updateBalance?.(betAmount, 'add');
+      };
 
       // Call API endpoint to place bet from house balance
       const response = await fetch('/api/balance/bet', {
@@ -441,27 +450,20 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
 
       if (!response.ok) {
         const errorData = await response.json();
+        releaseStake();
         throw new Error(errorData.error || 'Failed to place bet');
       }
 
       const data = await response.json();
 
       if (data.duplicate) {
-        await (get() as any).fetchBalance?.(userAddress);
-        set({ isPlacingBet: false, error: null });
+        releaseStake();
         throw new Error(data.message || 'Bet already processed');
       }
 
       if (data.betId == null || data.settlementToken == null) {
-        await (get() as any).fetchBalance?.(userAddress);
-        set({ isPlacingBet: false, error: null });
+        releaseStake();
         throw new Error('Invalid bet response from server');
-      }
-
-      const remRaw = data.remainingBalance;
-      const rem = typeof remRaw === 'number' ? remRaw : Number(remRaw);
-      if (Number.isFinite(rem)) {
-        (get() as any).setBalance?.(rem);
       }
 
       // Create ActiveBet object
@@ -492,11 +494,9 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
 
       // Add to active bets (multiple bets can be active simultaneously)
       addActiveBet(activeBet);
+      stakeHeld = false;
 
-      set({
-        isPlacingBet: false,
-        error: null
-      });
+      set({ error: null });
 
       // Return bet info for UI
       return {
@@ -506,6 +506,7 @@ export const createGameSlice: StateCreator<any> = (set, get) => ({
       };
     } catch (error) {
       console.error("Error placing bet from house balance:", error);
+      releaseStake();
       const houseBalance = Number((get() as any).houseBalance ?? 0);
       const raw = error instanceof Error ? error.message : "Failed to place bet";
       const needsDeposit = houseBalance <= 0 && /service unavailable|temporarily unavailable/i.test(raw);

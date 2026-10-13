@@ -27,6 +27,6 @@ export const config = wagmiGlobal.__taptWagmiConfig ?? (wagmiGlobal.__taptWagmiC
     appName: 'TapT',
     appDescription: 'Binary options on Robinhood Chain, Base, Arbitrum, Tempo, and Solana',
     appUrl: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
-    appIcon: typeof window !== 'undefined' ? `${window.location.origin}/brand/tapt-mark.jpg` : '/brand/tapt-mark.jpg',
+    appIcon: typeof window !== 'undefined' ? `${window.location.origin}/brand/tapt-mark.png` : '/brand/tapt-mark.png',
   }),
 ));

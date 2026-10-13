@@ -432,6 +432,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     let stopPriceFeed: (() => void) | undefined;
 
@@ -439,8 +446,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       try {
         const { updateAllPrices, loadTargetCells, startGlobalPriceFeed } = useOverflowStore.getState();
         const { initWalletKit } = await import('@/lib/stellar/wallet-kit');
-        await initWalletKit().catch(console.error);
-        await loadTargetCells().catch(console.error);
+        await initWalletKit().catch(() => {});
+        await loadTargetCells().catch(() => {});
 
         if (cancelled) return;
 

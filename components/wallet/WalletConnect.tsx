@@ -121,14 +121,14 @@ export const WalletConnect: React.FC = () => {
         aria-expanded={open}
         aria-label={chain ? `House balance ${houseLabel} on ${chain.name}` : `House balance ${houseLabel}`}
         onClick={() => setOpen((value) => !value)}
-        className="teal-btn h-9 gap-2 pl-1 pr-2.5 text-sm sm:h-10 sm:pr-3"
+        className="teal-btn h-9 max-w-[9.5rem] gap-2 pl-1 pr-2.5 text-sm sm:h-10 sm:max-w-none sm:pr-3"
       >
         {chain ? (
           <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-black">
             <img src={chain.logo} alt="" className="h-5 w-5 object-contain" />
           </span>
         ) : null}
-        <span className="tabular-nums text-white">
+        <span className="min-w-0 truncate tabular-nums text-white">
           {formatHouseBalance(houseAmount)}
           {chain ? <span className="ml-1 text-[#9a9590]">{chain.asset}</span> : null}
         </span>

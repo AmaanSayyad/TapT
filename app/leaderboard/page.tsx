@@ -293,7 +293,7 @@ function Stat({ label, value, hint, accent }: { label: string; value: string; hi
 function Empty({ title, body }: { title: string; body: string }) {
     return (
         <div className="flex flex-col items-center px-6 py-14 text-center">
-            <img src="/brand/tapt-mark.jpg" alt="" className="h-12 w-12 rounded-xl" />
+            <img src="/brand/tapt-mark.png" alt="" className="h-12 w-12 rounded-xl" />
             <p className="mt-4 text-base text-white">{title}</p>
             <p className="mt-2 max-w-sm text-sm leading-6 text-[#9a9590]">{body}</p>
         </div>

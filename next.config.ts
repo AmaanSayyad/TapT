@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The repo sits inside another folder that has its own lockfile. Pin the
+  // root here so Next stops warning and watching the parent directory.
+  turbopack: {
+    root: import.meta.dirname,
+  },
   /* Smaller dev cold compiles: tree-shake heavy barrel-export packages */
   experimental: {
     optimizePackageImports: [

@@ -4,7 +4,10 @@ import React from 'react';
 import { useOverflowStore } from '@/lib/store';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useModal } from 'connectkit';
-import { useDisconnect as useWagmiDisconnect } from 'wagmi';
+import { useConnect, useDisconnect as useWagmiDisconnect } from 'wagmi';
+import { injected } from 'wagmi/connectors';
+import { EVM_CHAINS, type EvmPlayNetwork } from '@/lib/chains/supported';
+import type { EIP1193Provider } from 'viem';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -67,12 +70,29 @@ const CHAINS: {
   },
 ];
 
+type EthereumWindow = Window & {
+  ethereum?: EIP1193Provider & { isMetaMask?: boolean; providers?: Array<EIP1193Provider & { isMetaMask?: boolean }> };
+};
+
+function phoneBrowser() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+/** MetaMask’s in-app browser injects this. A normal phone browser does not. */
+function metaMaskProvider(): EIP1193Provider | null {
+  const ethereum = (window as EthereumWindow).ethereum;
+  if (!ethereum) return null;
+  const listed = ethereum.providers?.find((provider) => provider.isMetaMask);
+  return listed ?? ethereum;
+}
+
 export const WalletConnectModal: React.FC = () => {
   const isOpen = useOverflowStore((state) => state.isConnectModalOpen);
   const setOpen = useOverflowStore((state) => state.setConnectModalOpen);
   const setPreferredNetwork = useOverflowStore((state) => state.setPreferredNetwork);
   const { setVisible: setSolanaModalVisible } = useWalletModal();
   const { setOpen: openConnectKit } = useModal();
+  const { connect } = useConnect();
   const { disconnect: wagmiDisconnect } = useWagmiDisconnect();
 
   const close = () => setOpen(false);
@@ -83,6 +103,26 @@ export const WalletConnectModal: React.FC = () => {
     if (network === 'SOL') {
       wagmiDisconnect();
       setTimeout(() => setSolanaModalVisible(true), 100);
+      return;
+    }
+    // ConnectKit asks MetaMask 600ms after the tap, and MetaMask on a phone drops that.
+    // WalletConnect is off, so the mobile deep link also has no request to deliver.
+    const narrow = window.innerWidth < 820;
+    const provider = metaMaskProvider();
+    if ((phoneBrowser() || narrow) && provider) {
+      const chainId = EVM_CHAINS[network as EvmPlayNetwork].chainId;
+      const connector = injected({
+        target: () => ({ id: 'metaMask', name: 'MetaMask', provider }),
+      });
+      void provider.request({ method: 'eth_requestAccounts' }).then(
+        () => connect({ connector, chainId }),
+        () => undefined,
+      );
+      return;
+    }
+    if (phoneBrowser() && !provider) {
+      const target = window.location.href.replace(/^https?:\/\//, '');
+      window.location.assign(`https://metamask.app.link/dapp/${target}`);
       return;
     }
     openConnectKit(true);

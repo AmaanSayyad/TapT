@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { line, curveMonotoneX } from 'd3-shape';
 import { useStore } from '@/lib/store';
@@ -123,140 +123,15 @@ const ASSET_CONFIG: Record<AssetType, { name: string; symbol: string; pair: stri
 };
 
 
-// Stock logo sources with fallback order
-const LOGO_SOURCES = {
-  // Clearbit API (primary - high quality company logos)
-  CLEARBIT: (domain: string) => `https://logo.clearbit.com/${domain}`,
-  
-  // Google Favicon service (reliable fallback)
-  GOOGLE: (domain: string) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-  
-  // CoinCap CDN (Very stable for crypto)
-  COINCAP: (symbol: string) => `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`,
+// Logos ship with the app. Remote logo hosts are slow and were blocking the mark.
+const AssetIcon = React.memo(function AssetIcon({ src, asset }: { src: string; asset: string }) {
+  const [failed, setFailed] = useState(false);
 
-  // Binance CDN
-  BINANCE: (symbol: string) => `https://bin.bnbstatic.com/static/images/coins/icon/${symbol.toLowerCase()}.png`,
-
-  // Local logos
-  LOCAL: (symbol: string) => `/logos/${symbol.toLowerCase()}.png`,
-};
-
-// Enhanced stock domain mapping
-const STOCK_DOMAIN_MAP: Record<string, string> = {
-  // Individual Stocks
-  AAPL: 'apple.com',
-  GOOGL: 'abc.xyz',
-  AMZN: 'amazon.com',
-  MSFT: 'microsoft.com',
-  NVDA: 'nvidia.com',
-  TSLA: 'tesla.com',
-  META: 'meta.com',
-  NFLX: 'netflix.com',
-  AMD: 'amd.com',
-  BABA: 'alibaba.com',
-  DIS: 'disney.com',
-  JPM: 'jpmorgan.com',
-  V: 'visa.com',
-  MA: 'mastercard.com',
-  PYPL: 'paypal.com',
-  COIN: 'coinbase.com',
-  MSTR: 'microstrategy.com',
-  UBER: 'uber.com',
-  PLTR: 'palantir.com',
-  CRM: 'salesforce.com',
-  INTC: 'intel.com',
-  TSM: 'tsmc.com',
-  
-  // Market Indices
-  SPX: 'spglobal.com',           // S&P 500 - managed by S&P Global
-  NDX: 'nasdaq.com',             // NASDAQ 100 - managed by NASDAQ
-  DJI: 'spglobal.com',           // Dow Jones - managed by S&P Global (CME Group also)
-  VIX: 'spglobal.com',           // VIX Volatility Index
-  DAX: 'deutsche-boerse.com',    // German DAX Index
-  N225: 'nikkei.com',            // Nikkei 225
-  HSI: 'hkex.com.hk',            // Hang Seng Index
-  FTSE: 'ftserussell.com',       // FTSE 100
-  CAC: 'euronext.com',           // CAC 40
-};
-
-// Component to safely display asset logos with multiple fallback sources
-const AssetIcon = ({ src, asset }: { src: string; asset: string; className?: string }) => {
-
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [attemptIndex, setAttemptIndex] = useState(0);
-  const [showFallback, setShowFallback] = useState(false);
-
-  // Reset state when asset or src changes
   useEffect(() => {
-    setCurrentSrc(src);
-    setAttemptIndex(0);
-    setShowFallback(false);
+    setFailed(false);
   }, [src, asset]);
 
-  // Generate all possible logo sources for this asset
-  const getAllSources = (): string[] => {
-    const sources: string[] = [];
-
-    // 1. Original src (if not already a fallback)
-    if (src && !src.includes('clearbit') && !src.includes('google.com')) {
-      sources.push(src);
-    }
-
-    // 2. Crypto CDNs before Clearbit domain guesses — wrong guesses (e.g. apt.com for APT)
-    //    often return a generic 200 image so onError never fires and the real logo is never tried.
-    const cryptoMapping: Record<string, string> = {
-      RENDER: 'rndr',
-      EGLD: 'egld',
-      KAS: 'kas',
-    };
-    const cryptoSymbol = cryptoMapping[asset] || asset;
-    sources.push(LOGO_SOURCES.COINCAP(cryptoSymbol));
-    sources.push(LOGO_SOURCES.BINANCE(cryptoSymbol));
-
-    // 3. Clearbit + Google when we have a known company domain (stocks / indices)
-    const domain = STOCK_DOMAIN_MAP[asset];
-    if (domain) {
-      sources.push(LOGO_SOURCES.CLEARBIT(domain));
-      sources.push(LOGO_SOURCES.GOOGLE(domain));
-    }
-
-    // 4. Speculative domains last (stocks without a map entry; avoid intercepting crypto tickers above)
-    if (!domain) {
-      const variations = [
-        `${asset.toLowerCase()}.com`,
-        `${asset.toLowerCase()}.io`,
-        `${asset.toLowerCase()}.co`,
-        `${asset.toLowerCase()}.org`,
-      ];
-      variations.forEach((d) => {
-        sources.push(LOGO_SOURCES.CLEARBIT(d));
-        sources.push(LOGO_SOURCES.GOOGLE(d));
-      });
-    }
-
-    // 5. Local filename convention
-    sources.push(LOGO_SOURCES.LOCAL(asset));
-
-    return sources;
-  };
-
-  const allSources = getAllSources();
-
-  // Handle image load error - try next source
-  const handleImageError = () => {
-    const nextIndex = attemptIndex + 1;
-    
-    if (nextIndex < allSources.length) {
-      // Try next source
-      setCurrentSrc(allSources[nextIndex]);
-      setAttemptIndex(nextIndex);
-    } else {
-      // All sources failed - show first letter fallback
-      setShowFallback(true);
-    }
-  };
-
-  if (showFallback || allSources.length === 0 || !currentSrc) {
+  if (failed || !src) {
     return (
       <span className="flex h-full w-full items-center justify-center text-[11px] font-medium text-[#9a9590]">
         {asset.slice(0, 3)}
@@ -266,14 +141,14 @@ const AssetIcon = ({ src, asset }: { src: string; asset: string; className?: str
 
   return (
     <img
-      key={`${asset}-${attemptIndex}`}
-      src={currentSrc}
+      src={src}
       alt=""
+      decoding="async"
       className="h-full w-full object-contain"
-      onError={handleImageError}
+      onError={() => setFailed(true)}
     />
   );
-};
+});
 
 export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount }) => {
   const priceHistory = useStore((state) => state.priceHistory);
@@ -288,7 +163,6 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   const fetchBalance = useStore((state) => state.fetchBalance);
   const userAddress = useStore((state) => state.address);
   const houseBalance = useStore((state) => state.houseBalance);
-  const isPlacingBet = useStore((state) => state.isPlacingBet);
 
   const gameMode = useStore((state) => state.gameMode);
   const timeframeSeconds = useStore((state) => state.timeframeSeconds);
@@ -300,6 +174,8 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   const selectedCurrency = useStore((state) => state.selectedCurrency);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridShiftRef = useRef<HTMLDivElement>(null);
+  const gridMotionRef = useRef({ pps: 0, tipX: 0, anchor: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [now, setNow] = useState(Date.now());
   const [isAssetDropdownOpen, setIsAssetDropdownOpen] = useState(false);
@@ -520,23 +396,31 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     yDomain.current.initialized = false;
   }, [selectedAsset]);
 
-  // Animation Loop - Optimized for performance
+  // Scroll the chart on a timer. A full animation frame was redrawing this
+  // component about 60 times a second and made the phone hitch.
   useEffect(() => {
-    let frameId: number;
-    let lastTime = Date.now();
-
-    const animate = () => {
-      const currentTime = Date.now();
-      // Throttle to ~15fps (64ms) for significantly better performance
-      if (currentTime - lastTime > 64) {
-        setNow(currentTime);
-        lastTime = currentTime;
+    let timer = 0;
+    const tick = () => {
+      if (document.hidden) return;
+      const motion = gridMotionRef.current;
+      const layer = gridShiftRef.current;
+      if (layer && motion.pps > 0) {
+        const shift = motion.tipX + ((motion.anchor - Date.now()) / 1000) * motion.pps;
+        layer.style.transform = `translate3d(${shift}px,0,0)`;
       }
-
-      frameId = requestAnimationFrame(animate);
+      setNow(Date.now());
     };
-    frameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId);
+    const start = () => {
+      window.clearInterval(timer);
+      const mobile = window.matchMedia('(max-width: 767px)').matches;
+      timer = window.setInterval(tick, mobile ? 200 : 100);
+    };
+    start();
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', tick);
+    };
   }, []);
 
   // Configuration - Responsive + Timeframe
@@ -593,6 +477,20 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
     return { yScale, xScale, tipX, minY, maxY };
   }, [dimensions, priceHistory, currentPrice, now, historyWidthRatio, pixelsPerSecond, selectedAsset]);
+
+  const columnAnchor = gridInterval > 0 ? Math.floor(now / gridInterval) * gridInterval : now;
+  const scaleMinY = scales?.minY ?? 0;
+  const scaleMaxY = scales?.maxY ?? 0;
+  const scaleTipX = scales?.tipX ?? 0;
+  gridMotionRef.current = { pps: pixelsPerSecond, tipX: scaleTipX, anchor: columnAnchor };
+
+  useLayoutEffect(() => {
+    const motion = gridMotionRef.current;
+    const layer = gridShiftRef.current;
+    if (!layer || motion.pps <= 0) return;
+    const shift = motion.tipX + ((motion.anchor - Date.now()) / 1000) * motion.pps;
+    layer.style.transform = `translate3d(${shift}px,0,0)`;
+  });
 
   const scalesRef = useRef(scales);
   const currentPriceRef = useRef(currentPrice);
@@ -968,13 +866,15 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   // Continuous Grid Generation
   // Cells are now positioned based on PRICE LEVELS, not fixed pixels
   const betCells = useMemo(() => {
-    if (!scales || dimensions.height === 0) return [];
+    if (gameMode !== 'box' || scaleMaxY <= scaleMinY || dimensions.height === 0) return [];
 
     const cells = [];
     const colWidth = (gridInterval / 1000) * pixelsPerSecond;
+    const ySpan = scaleMaxY - scaleMinY;
+    const yScale = (price: number) => dimensions.height - ((price - scaleMinY) / ySpan) * dimensions.height;
 
     // Calculate a stable price step based on the current range to ensure the grid "slides" correctly
-    const rawStep = (scales.maxY - scales.minY) / 10;
+    const rawStep = ySpan / 10;
     // Safety check: rawStep must be positive and meaningful
     if (isNaN(rawStep) || rawStep <= 0) return [];
     
@@ -989,30 +889,33 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
 
     // Calculate visible price range with buffer (0.8x viewport)
-    const viewPadding = (scales.maxY - scales.minY) * 0.8;
+    const viewPadding = ySpan * 0.8;
 
 
-    const gridMaxY = scales.maxY + viewPadding;
-    const gridMinY = scales.minY - viewPadding;
+    const gridMaxY = scaleMaxY + viewPadding;
+    const gridMinY = scaleMinY - viewPadding;
 
     // Stable snap points
     const startPrice = Math.floor(gridMaxY / priceStep) * priceStep;
     const endPrice = Math.ceil(gridMinY / priceStep) * priceStep;
 
-    const priceRange = scales.maxY - scales.minY;
+    const priceRange = ySpan;
 
-    // Time-based generation for stable keys
-    const startTime = Math.floor(now / gridInterval) * gridInterval - gridInterval;
-    const endTime = now + ((dimensions.width - scales.tipX) / pixelsPerSecond) * 1000 + gridInterval * 2;
+    // Time-based generation for stable keys. Positions are relative to the
+    // current column so the layer can slide with one transform instead of
+    // moving every cell on each tick.
+    const startTime = columnAnchor - gridInterval;
+    const endTime = columnAnchor + ((dimensions.width - scaleTipX) / pixelsPerSecond) * 1000 + gridInterval * 2;
 
     for (let colTimestamp = startTime; colTimestamp <= endTime; colTimestamp += gridInterval) {
-      const colX = scales.xScale(colTimestamp);
+      const colX = ((colTimestamp - columnAnchor) / 1000) * pixelsPerSecond;
+      const screenX = colX + scaleTipX;
 
-      if (colX + colWidth < 0) continue;
-      if (colX > dimensions.width + 100) continue;
+      if (screenX + colWidth < 0) continue;
+      if (screenX > dimensions.width + 100) continue;
 
-      const isCrossing = colX <= scales.tipX && colX + colWidth > scales.tipX;
-      const isPast = colX + colWidth <= scales.tipX;
+      const isCrossing = colTimestamp === columnAnchor;
+      const isPast = colTimestamp < columnAnchor;
 
 
       // Loop through price levels
@@ -1021,9 +924,9 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
         const rowPriceCenter = (rowPriceTop + rowPriceBottom) / 2;
         const priceLevelIndex = Math.round(rowPriceTop / priceStep);
 
-        const y = scales.yScale(rowPriceTop);
+        const y = yScale(rowPriceTop);
 
-        const cellBottom = scales.yScale(rowPriceBottom);
+        const cellBottom = yScale(rowPriceBottom);
         const rowHeight = cellBottom - y;
 
         // Skip if completely off screen vertically to save performance
@@ -1106,7 +1009,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     }
 
     return cells;
-  }, [scales, currentPrice, dimensions, gameMode, timeframeSeconds, selectedAsset, isBlitzActive, hasBlitzAccess, blitzMultiplier]);
+  }, [scaleMinY, scaleMaxY, scaleTipX, columnAnchor, currentPrice, dimensions, gameMode, gridInterval, pixelsPerSecond, isBlitzActive, hasBlitzAccess, blitzMultiplier]);
 
 
 
@@ -1145,7 +1048,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
           payout,
           multiplier: bet.multiplier,
           timestamp: Date.now(),
-          x: cell.x,
+          x: cell.x + scaleTipX,
           y: cell.y
         }]);
 
@@ -1251,7 +1154,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
       {/* Box Mode: Grid Cells layer */}
       {gameMode === 'box' && (
-        <div className="absolute inset-0 z-5 overflow-hidden pointer-events-none">
+        <div ref={gridShiftRef} className="absolute inset-0 z-5 overflow-hidden pointer-events-none" style={{ willChange: 'transform' }}>
           {betCells.map((cell: any) => {
             // Visual styling based on status
             let opacity = 0.9;
@@ -1473,15 +1376,14 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                   <div className="flex gap-2">
                     <button
                       onClick={handlePlaceDrawBet}
-                      disabled={isPlacingBet || !userAddress}
+                      disabled={!userAddress}
                       className="flex-1 py-2 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-[#110e08] text-xs font-black disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isPlacingBet ? 'Placing...' : `Bet ${betAmount} ${currencySymbol}`}
+                      {`Bet ${betAmount} ${currencySymbol}`}
                     </button>
                     <button
                       onClick={() => setPendingBox(null)}
-                      disabled={isPlacingBet}
-                      className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs font-black disabled:opacity-50"
+                      className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-xs font-black"
                     >
                       Cancel
                     </button>
@@ -1843,7 +1745,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
       </svg>
 
       {/* Price Header with Asset Selector - Dropdown Version */}
-      <div className="pointer-events-auto absolute left-3 top-4 z-40 sm:left-8 sm:top-6">
+      <div className="pointer-events-auto absolute left-3 top-3 z-40 max-w-[calc(100%-7.5rem)] sm:left-8 sm:top-6 sm:max-w-none">
         <div className="relative mb-4">
           {/* Trigger Button */}
           <button
@@ -1909,7 +1811,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
           </p>
           <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#02040A] px-2 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
-            <span className="max-w-[11rem] text-[11px] leading-4 text-[#9a9590] sm:max-w-none sm:text-xs">Chainlink on Robinhood Chain · Hyperliquid</span>
+            <span className="max-w-[9.5rem] truncate whitespace-nowrap text-[11px] leading-4 text-[#9a9590] sm:max-w-none sm:text-xs">Chainlink · Hyperliquid</span>
           </div>
         </div>
       </div>
