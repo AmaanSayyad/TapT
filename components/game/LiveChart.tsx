@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { line, curveMonotoneX } from 'd3-shape';
 import { useStore } from '@/lib/store';
@@ -183,9 +183,17 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
   const containerRef = useRef<HTMLDivElement>(null);
   const gridShiftRef = useRef<HTMLDivElement>(null);
-  const chartScrollRef = useRef<SVGGElement>(null);
-  const chartBridgeRef = useRef<SVGLineElement>(null);
-  const gridMotionRef = useRef({ pps: 0, tipX: 0, anchor: 0, chartAnchor: 0, tipY: 0 });
+  const linePathsRef = useRef<Array<SVGPathElement | null>>([]);
+  const tipRef = useRef<SVGCircleElement>(null);
+  const priceLineRef = useRef<SVGLineElement>(null);
+  const gridMotionRef = useRef({ pps: 0, tipX: 0, anchor: 0 });
+  const lineMotionRef = useRef<{
+    pps: number;
+    tipX: number;
+    price: number;
+    points: { timestamp: number; price: number }[];
+    yAt: (price: number) => number;
+  }>({ pps: 0, tipX: 0, price: 0, points: [], yAt: () => 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [now, setNow] = useState(Date.now());
   const [isAssetDropdownOpen, setIsAssetDropdownOpen] = useState(false);
@@ -406,39 +414,62 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     yDomain.current.initialized = false;
   }, [selectedAsset]);
 
-  // The line and box grid slide on the compositor every frame. React only
-  // rebuilds the path a few times a second, which is what was making it stutter.
+  // Move the line by rewriting its points. Translating a stale path left a
+  // flat segment across the chart whenever React was behind the clock.
   useEffect(() => {
     let frame = 0;
     let timer = 0;
-    const apply = () => {
-      const motion = gridMotionRef.current;
-      if (motion.pps <= 0) return;
+    const generator = line<{ timestamp: number; price: number }>()
+      .curve(curveMonotoneX);
+    const paint = () => {
+      const grid = gridMotionRef.current;
+      const motion = lineMotionRef.current;
       const nowMs = Date.now();
-      const chartShift = ((motion.chartAnchor - nowMs) / 1000) * motion.pps;
-      const chart = chartScrollRef.current;
-      if (chart) chart.setAttribute('transform', `translate(${chartShift} 0)`);
-      const bridge = chartBridgeRef.current;
-      if (bridge) {
-        bridge.setAttribute('x1', String(motion.tipX + chartShift));
-        bridge.setAttribute('x2', String(motion.tipX));
-        bridge.setAttribute('y1', String(motion.tipY));
-        bridge.setAttribute('y2', String(motion.tipY));
+      if (grid.pps > 0) {
+        const layer = gridShiftRef.current;
+        if (layer) {
+          const gridShift = grid.tipX + ((grid.anchor - nowMs) / 1000) * grid.pps;
+          layer.style.transform = `translate3d(${gridShift}px,0,0)`;
+        }
       }
-      const layer = gridShiftRef.current;
-      if (layer) {
-        const gridShift = motion.tipX + ((motion.anchor - nowMs) / 1000) * motion.pps;
-        layer.style.transform = `translate3d(${gridShift}px,0,0)`;
+      if (motion.pps > 0 && motion.price > 0 && motion.points.length > 0) {
+        const minT = nowMs - ((motion.tipX + 120) / motion.pps) * 1000;
+        const visible: { timestamp: number; price: number }[] = [];
+        for (const point of motion.points) {
+          if (point.timestamp >= minT && point.timestamp <= nowMs && point.price > 0) visible.push(point);
+        }
+        visible.push({ timestamp: nowMs, price: motion.price });
+        if (visible.length >= 2) {
+          generator
+            .x((point) => motion.tipX + ((point.timestamp - nowMs) / 1000) * motion.pps)
+            .y((point) => motion.yAt(point.price));
+          const path = generator(visible);
+          if (path) {
+            for (const node of linePathsRef.current) node?.setAttribute('d', path);
+          }
+        }
+        const y = motion.yAt(motion.price);
+        const tip = tipRef.current;
+        if (tip) {
+          tip.setAttribute('cx', String(motion.tipX));
+          tip.setAttribute('cy', String(y));
+        }
+        const guide = priceLineRef.current;
+        if (guide) {
+          guide.setAttribute('y1', String(y));
+          guide.setAttribute('y2', String(y));
+          guide.setAttribute('x2', String(Math.max(0, motion.tipX - 10)));
+        }
       }
     };
     const loop = () => {
-      if (!document.hidden) apply();
+      if (!document.hidden) paint();
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
     timer = window.setInterval(() => {
       if (!document.hidden) setNow(Date.now());
-    }, 200);
+    }, 1000);
     return () => {
       cancelAnimationFrame(frame);
       window.clearInterval(timer);
@@ -504,33 +535,14 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   const scaleMinY = scales?.minY ?? 0;
   const scaleMaxY = scales?.maxY ?? 0;
   const scaleTipX = scales?.tipX ?? 0;
-  gridMotionRef.current = {
+  gridMotionRef.current = { pps: pixelsPerSecond, tipX: scaleTipX, anchor: columnAnchor };
+  lineMotionRef.current = {
     pps: pixelsPerSecond,
     tipX: scaleTipX,
-    anchor: columnAnchor,
-    chartAnchor: now,
-    tipY: scales ? scales.yScale(currentPrice) : 0,
+    price: currentPrice,
+    points: priceHistory,
+    yAt: scales ? scales.yScale : () => 0,
   };
-
-  useLayoutEffect(() => {
-    const motion = gridMotionRef.current;
-    if (motion.pps <= 0) return;
-    const nowMs = Date.now();
-    const chartShift = ((motion.chartAnchor - nowMs) / 1000) * motion.pps;
-    chartScrollRef.current?.setAttribute('transform', `translate(${chartShift} 0)`);
-    const bridge = chartBridgeRef.current;
-    if (bridge) {
-      bridge.setAttribute('x1', String(motion.tipX + chartShift));
-      bridge.setAttribute('x2', String(motion.tipX));
-      bridge.setAttribute('y1', String(motion.tipY));
-      bridge.setAttribute('y2', String(motion.tipY));
-    }
-    const layer = gridShiftRef.current;
-    if (layer) {
-      const gridShift = motion.tipX + ((motion.anchor - nowMs) / 1000) * motion.pps;
-      layer.style.transform = `translate3d(${gridShift}px,0,0)`;
-    }
-  });
 
   const scalesRef = useRef(scales);
   const currentPriceRef = useRef(currentPrice);
@@ -1641,9 +1653,9 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
             {chartPath && currentPrice > 0 && (
               <>
-                <g ref={chartScrollRef}>
                 {/* Dark edge so the line stays visible on lime box cells */}
                 <path
+                  ref={(node) => { linePathsRef.current[0] = node; }}
                   d={chartPath}
                   fill="none"
                   stroke="#110e08"
@@ -1653,6 +1665,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                 />
                 {/* Glow */}
                 <path
+                  ref={(node) => { linePathsRef.current[1] = node; }}
                   d={chartPath}
                   fill="none"
                   stroke="#ccff00"
@@ -1663,6 +1676,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                 />
                 {/* Main line */}
                 <path
+                  ref={(node) => { linePathsRef.current[2] = node; }}
                   d={chartPath}
                   fill="none"
                   stroke="#ccff00"
@@ -1670,21 +1684,10 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-                </g>
-
-                <line
-                  ref={chartBridgeRef}
-                  x1={scales.tipX}
-                  y1={scales.yScale(currentPrice)}
-                  x2={scales.tipX}
-                  y2={scales.yScale(currentPrice)}
-                  stroke="#ccff00"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
 
                 {/* Tip indicator */}
                 <circle
+                  ref={tipRef}
                   cx={scales.tipX}
                   cy={scales.yScale(currentPrice)}
                   r="5"
@@ -1695,6 +1698,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
                 {/* Horizontal price line */}
                 <line
+                  ref={priceLineRef}
                   x1={0}
                   y1={scales.yScale(currentPrice)}
                   x2={scales.tipX - 10}
