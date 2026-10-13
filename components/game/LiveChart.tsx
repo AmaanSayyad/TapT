@@ -183,7 +183,9 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
   const containerRef = useRef<HTMLDivElement>(null);
   const gridShiftRef = useRef<HTMLDivElement>(null);
-  const gridMotionRef = useRef({ pps: 0, tipX: 0, anchor: 0 });
+  const chartScrollRef = useRef<SVGGElement>(null);
+  const chartBridgeRef = useRef<SVGLineElement>(null);
+  const gridMotionRef = useRef({ pps: 0, tipX: 0, anchor: 0, chartAnchor: 0, tipY: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [now, setNow] = useState(Date.now());
   const [isAssetDropdownOpen, setIsAssetDropdownOpen] = useState(false);
@@ -404,30 +406,42 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
     yDomain.current.initialized = false;
   }, [selectedAsset]);
 
-  // Scroll the chart on a timer. A full animation frame was redrawing this
-  // component about 60 times a second and made the phone hitch.
+  // The line and box grid slide on the compositor every frame. React only
+  // rebuilds the path a few times a second, which is what was making it stutter.
   useEffect(() => {
+    let frame = 0;
     let timer = 0;
-    const tick = () => {
-      if (document.hidden) return;
+    const apply = () => {
       const motion = gridMotionRef.current;
-      const layer = gridShiftRef.current;
-      if (layer && motion.pps > 0) {
-        const shift = motion.tipX + ((motion.anchor - Date.now()) / 1000) * motion.pps;
-        layer.style.transform = `translate3d(${shift}px,0,0)`;
+      if (motion.pps <= 0) return;
+      const nowMs = Date.now();
+      const chartShift = ((motion.chartAnchor - nowMs) / 1000) * motion.pps;
+      const chart = chartScrollRef.current;
+      if (chart) chart.setAttribute('transform', `translate(${chartShift} 0)`);
+      const bridge = chartBridgeRef.current;
+      if (bridge) {
+        bridge.setAttribute('x1', String(motion.tipX + chartShift));
+        bridge.setAttribute('x2', String(motion.tipX));
+        bridge.setAttribute('y1', String(motion.tipY));
+        bridge.setAttribute('y2', String(motion.tipY));
       }
-      setNow(Date.now());
+      const layer = gridShiftRef.current;
+      if (layer) {
+        const gridShift = motion.tipX + ((motion.anchor - nowMs) / 1000) * motion.pps;
+        layer.style.transform = `translate3d(${gridShift}px,0,0)`;
+      }
     };
-    const start = () => {
-      window.clearInterval(timer);
-      const mobile = window.matchMedia('(max-width: 767px)').matches;
-      timer = window.setInterval(tick, mobile ? 200 : 100);
+    const loop = () => {
+      if (!document.hidden) apply();
+      frame = requestAnimationFrame(loop);
     };
-    start();
-    document.addEventListener('visibilitychange', tick);
+    frame = requestAnimationFrame(loop);
+    timer = window.setInterval(() => {
+      if (!document.hidden) setNow(Date.now());
+    }, 200);
     return () => {
+      cancelAnimationFrame(frame);
       window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', tick);
     };
   }, []);
 
@@ -490,14 +504,32 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
   const scaleMinY = scales?.minY ?? 0;
   const scaleMaxY = scales?.maxY ?? 0;
   const scaleTipX = scales?.tipX ?? 0;
-  gridMotionRef.current = { pps: pixelsPerSecond, tipX: scaleTipX, anchor: columnAnchor };
+  gridMotionRef.current = {
+    pps: pixelsPerSecond,
+    tipX: scaleTipX,
+    anchor: columnAnchor,
+    chartAnchor: now,
+    tipY: scales ? scales.yScale(currentPrice) : 0,
+  };
 
   useLayoutEffect(() => {
     const motion = gridMotionRef.current;
+    if (motion.pps <= 0) return;
+    const nowMs = Date.now();
+    const chartShift = ((motion.chartAnchor - nowMs) / 1000) * motion.pps;
+    chartScrollRef.current?.setAttribute('transform', `translate(${chartShift} 0)`);
+    const bridge = chartBridgeRef.current;
+    if (bridge) {
+      bridge.setAttribute('x1', String(motion.tipX + chartShift));
+      bridge.setAttribute('x2', String(motion.tipX));
+      bridge.setAttribute('y1', String(motion.tipY));
+      bridge.setAttribute('y2', String(motion.tipY));
+    }
     const layer = gridShiftRef.current;
-    if (!layer || motion.pps <= 0) return;
-    const shift = motion.tipX + ((motion.anchor - Date.now()) / 1000) * motion.pps;
-    layer.style.transform = `translate3d(${shift}px,0,0)`;
+    if (layer) {
+      const gridShift = motion.tipX + ((motion.anchor - nowMs) / 1000) * motion.pps;
+      layer.style.transform = `translate3d(${gridShift}px,0,0)`;
+    }
   });
 
   const scalesRef = useRef(scales);
@@ -1609,6 +1641,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
 
             {chartPath && currentPrice > 0 && (
               <>
+                <g ref={chartScrollRef}>
                 {/* Dark edge so the line stays visible on lime box cells */}
                 <path
                   d={chartPath}
@@ -1636,6 +1669,18 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                />
+                </g>
+
+                <line
+                  ref={chartBridgeRef}
+                  x1={scales.tipX}
+                  y1={scales.yScale(currentPrice)}
+                  x2={scales.tipX}
+                  y2={scales.yScale(currentPrice)}
+                  stroke="#ccff00"
+                  strokeWidth="3"
+                  strokeLinecap="round"
                 />
 
                 {/* Tip indicator */}

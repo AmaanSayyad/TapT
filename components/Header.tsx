@@ -63,7 +63,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-[100] w-full max-w-full shrink-0 overflow-x-clip bg-black pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-[100] w-full max-w-full shrink-0 bg-black pt-[env(safe-area-inset-top)]">
       <div className="flex h-14 w-full min-w-0 max-w-full items-center justify-between gap-2 px-3 sm:h-16 sm:gap-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" onClick={closeMenu}>
@@ -116,25 +116,25 @@ export function Header() {
               {accountType === 'demo' ? 'Exit demo' : 'Demo'}
             </button>
           )}
-          <WalletConnect />
-          {onHome && (
-            <Link href="/trade" className="neon-btn h-9 shrink-0 px-3 text-sm sm:h-10 sm:px-4">
-              Launch
-            </Link>
-          )}
           <button
             type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#3a3a3a] bg-[#141414] text-white lg:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ccff00] bg-[#141414] text-[#ccff00] lg:hidden"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((open) => !open)}
           >
-            <span className="flex w-[18px] flex-col gap-[5px]" aria-hidden>
-              <span className={`block h-[2px] w-full origin-center rounded-full bg-white transition ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
-              <span className={`block h-[2px] w-full rounded-full bg-white transition ${menuOpen ? 'opacity-0' : ''}`} />
-              <span className={`block h-[2px] w-full origin-center rounded-full bg-white transition ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
+            <span className="flex w-5 flex-col gap-1.5" aria-hidden>
+              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
+              <span className={`block h-0.5 w-full rounded-full bg-[#ccff00] transition ${menuOpen ? 'opacity-0' : ''}`} />
+              <span className={`block h-0.5 w-full origin-center rounded-full bg-[#ccff00] transition ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
             </span>
           </button>
+          <WalletConnect />
+          {onHome && (
+            <Link href="/trade" className="neon-btn !hidden h-9 shrink-0 px-3 text-sm min-[420px]:!inline-flex sm:h-10 sm:px-4">
+              Launch
+            </Link>
+          )}
         </div>
       </div>
       {menuOpen && (
