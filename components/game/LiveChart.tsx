@@ -959,7 +959,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({ betAmount, setBetAmount })
           baseMultiplier = 1.05 + Math.pow(normalizedDist, 1.3) * 3.95;
         }
 
-        const timeBonus = Math.max(0, (colX - scales.tipX) / 800) * 0.25;
+        const timeBonus = Math.max(0, colX / 800) * 0.25;
         let calculatedMultiplier = Math.min(baseMultiplier + timeBonus, 10.0);
 
         // BLITZ MODE BOOST (x2 Multiplier) - Reduced density as requested
